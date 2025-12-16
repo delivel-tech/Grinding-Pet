@@ -10,5 +10,10 @@
 	"name": "Grinding Pet",
 	"version": "v0.0.1-alpha",
 	"developer": "delivel",
-	"description": "This mod adds a pet that you can develop by grinding stats!"
+	"description": "Raise a pet by grinding stats!",
+	"resources": {
+		"sprites": [
+			"resources/petButton.png"
+		]
+	}
 }
