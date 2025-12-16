@@ -1,0 +1,14 @@
+{
+	"geode": "4.10.0",
+	"gd": {
+		"win": "2.2074",
+		"android": "2.2074",
+		"mac": "2.2074",
+		"ios": "2.2074"
+	},
+	"id": "delivel.grinding-pet",
+	"name": "Grinding Pet",
+	"version": "v0.0.1-alpha",
+	"developer": "delivel",
+	"description": "This mod adds a pet that you can develop by grinding stats!"
+}
