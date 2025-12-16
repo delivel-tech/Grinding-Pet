@@ -1,5 +1,6 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/MenuLayer.hpp>
+#include "PetLayer.hpp"
 
 using namespace geode::prelude;
 
@@ -20,6 +21,12 @@ class $modify(PetMenuLayer, MenuLayer) {
     };
 
     void onPetButton(CCObject* sender) {
-        Notification::create("Callback :)", NotificationIcon::Success)->show();
+        auto scene = CCScene::create();
+        auto layer = PetLayer::create();
+        scene->addChild(layer);
+
+        auto transition = CCTransitionFade::create(0.5f, scene);
+
+        CCDirector::sharedDirector()->pushScene(transition);
     }
 };
