@@ -1,8 +1,13 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/MenuLayer.hpp>
 #include "PetLayer.hpp"
+#include "PetUtils.hpp"
 
 using namespace geode::prelude;
+
+$on_mod(Loaded) {
+    PetUtils::getTotalStars();
+}
 
 class $modify(PetMenuLayer, MenuLayer) {
     bool init() {

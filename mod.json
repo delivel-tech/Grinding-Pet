@@ -13,7 +13,9 @@
 	"description": "Raise a pet by grinding stats!",
 	"resources": {
 		"sprites": [
-			"resources/petButton.png"
+			"resources/petButton.png",
+			"resources/starSpr.png",
+			"resources/moonSpr.png"
 		]
 	}
 }

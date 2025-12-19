@@ -1,5 +1,8 @@
 #include <Geode/Geode.hpp>
 #include "PetLayer.hpp"
+#include <Geode/fmod/fmod.h>
+#include "RenamePopup.hpp"
+#include "PetUtils.hpp"
 
 using namespace geode::prelude;
 
@@ -13,12 +16,28 @@ PetLayer* PetLayer::create() {
 	return nullptr;
 }
 
+static constexpr char const* kPetNameKey = "pet-name";
+
+
 bool PetLayer::init() {
 	if (!CCLayer::init()) return false;
+
+	auto audio = GameManager::sharedState();
+	auto audio1 = FMODAudioEngine::sharedEngine();
+
+	audio1->pauseMusic(0);
+	audio1->playMusic("secretShop.mp3", true, 1.f, 0);
 
 	this->setKeypadEnabled(true);
 
 	auto winSize = CCDirector::sharedDirector()->getWinSize();
+
+	PetUtils::checkStars();
+	Mod::get()->setSavedValue<int>("moonAmountV", 0);
+
+	auto saved = geode::Mod::get()->getSavedValue<std::string>(kPetNameKey, "Grinding Pet");
+    m_petName = saved;
+
 
 	const char* bgFile = "game_bg_01_001.png";
 
@@ -76,9 +95,9 @@ bool PetLayer::init() {
 
 	auto panelCS = panel->getContentSize();
 
-	auto title = CCLabelBMFont::create("Grinding Pet", "goldFont.fnt");
-	title->setPosition(panelCS.width / 2, panelCS.height - 28.f);
-	panel->addChild(title);
+	m_titleLabel = CCLabelBMFont::create(m_petName.c_str(), "goldFont.fnt");
+	m_titleLabel->setPosition(panelCS.width / 2, panelCS.height - 28.f);
+	panel->addChild(m_titleLabel);
 
 	auto settingsSpr = CCSprite::createWithSpriteFrameName("accountBtn_settings_001.png");
 
@@ -101,9 +120,46 @@ bool PetLayer::init() {
 	btnMenu->addChild(renameBtn);
 
 	auto petPanel = CCScale9Sprite::create("GJ_square05.png");
-	petPanel->setContentSize({200.f, 170.f});
+	petPanel->setContentSize({120.f, 170.f});
 	petPanel->setPosition(0, 4);
 	btnMenu->addChild(petPanel);
+
+	auto petShadow = CCSprite::createWithSpriteFrameName("chest_shadow_001.png");
+	petShadow->setPosition({60.f, 40.f});
+	petShadow->setScale(0.8f);
+	petShadow->setOpacity(50.f);
+	petPanel->addChild(petShadow);
+
+	auto petIcon = CCSprite::createWithSpriteFrameName("player_01_001.png");
+	petIcon->setPosition({60.f, 65.f});
+	petIcon->setScale(1.7f);
+	petPanel->addChild(petIcon);
+
+	auto starSpr = CCSprite::create("starSpr.png"_spr);
+	if (!starSpr) return true;
+	starSpr->setPosition({20.f, 200.f});
+	starSpr->setScale(1.5f);
+	panel->addChild(starSpr);
+
+	auto starAmountVa = Mod::get()->getSavedValue<int>("starAmountV");
+	auto starAmount = CCLabelBMFont::create(std::to_string(starAmountVa).c_str(), "bigFont.fnt");
+	starAmount->setAnchorPoint({0.f, 0.5f});
+	starAmount->setPosition({35.f, 200.f});
+	starAmount->setScale(0.5f);
+	panel->addChild(starAmount);
+
+	auto moonSpr = CCSprite::create("moonSpr.png"_spr);
+	if (!moonSpr) return true;
+	moonSpr->setPosition({20.f, 175.f});
+	moonSpr->setScale(1.5f);
+	panel->addChild(moonSpr);
+
+	auto moonAmountVa = Mod::get()->getSavedValue<int>("moonAmountV");
+	auto moonAmount = CCLabelBMFont::create(std::to_string(moonAmountVa).c_str(), "bigFont.fnt");
+	moonAmount->setAnchorPoint({0.f, 0.5f});
+	moonAmount->setPosition({35.f, 175.f});
+	moonAmount->setScale(0.5f);
+	panel->addChild(moonAmount);
 
 	return true;
 }
@@ -126,14 +182,23 @@ void PetLayer::onSettingsBtn(CCObject* sender) {
 }
 
 void PetLayer::onUpgradeBtn(CCObject* sender) {
-	Notification::create("Upgrade callback placeholder", NotificationIcon::Info)->show();
+	Notification::create(fmt::format("Stats: {}", Mod::get()->getSavedValue<int>("current-stars")), NotificationIcon::Info)->show();
 }
 
 void PetLayer::onRenameBtn(CCObject* sender) {
-	Notification::create("Rename callback placeholder", NotificationIcon::Info)->show();
+	RenamePopup::create(m_petName, [this](std::string newName) {
+    m_petName = std::move(newName);
+
+    geode::Mod::get()->setSavedValue<std::string>(kPetNameKey, m_petName);
+
+    if (m_titleLabel) m_titleLabel->setString(m_petName.c_str());
+})->show();
+
 }
 
 void PetLayer::onBack(CCObject*) {
+	auto audio = GameManager::sharedState();
+	audio->fadeInMenuMusic();
 	CCDirector::sharedDirector()->popSceneWithTransition(0.5f, PopTransition::kPopTransitionFade);
 }
 
