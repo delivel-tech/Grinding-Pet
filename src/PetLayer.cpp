@@ -16,11 +16,12 @@ PetLayer* PetLayer::create() {
 	return nullptr;
 }
 
-static constexpr char const* kPetNameKey = "pet-name";
-
 
 bool PetLayer::init() {
 	if (!CCLayer::init()) return false;
+
+	PetUtils::is_ready1 = false;
+	PetUtils::is_ready2 = false;
 
 	auto audio = GameManager::sharedState();
 	auto audio1 = FMODAudioEngine::sharedEngine();
@@ -31,13 +32,6 @@ bool PetLayer::init() {
 	this->setKeypadEnabled(true);
 
 	auto winSize = CCDirector::sharedDirector()->getWinSize();
-
-	PetUtils::checkStars();
-	Mod::get()->setSavedValue<int>("moonAmountV", 0);
-
-	auto saved = geode::Mod::get()->getSavedValue<std::string>(kPetNameKey, "Grinding Pet");
-    m_petName = saved;
-
 
 	const char* bgFile = "game_bg_01_001.png";
 
@@ -95,7 +89,7 @@ bool PetLayer::init() {
 
 	auto panelCS = panel->getContentSize();
 
-	m_titleLabel = CCLabelBMFont::create(m_petName.c_str(), "goldFont.fnt");
+	m_titleLabel = CCLabelBMFont::create(Mod::get()->getSavedValue<std::string>("pet-name").c_str(), "goldFont.fnt");
 	m_titleLabel->setPosition(panelCS.width / 2, panelCS.height - 28.f);
 	panel->addChild(m_titleLabel);
 
@@ -141,7 +135,7 @@ bool PetLayer::init() {
 	starSpr->setScale(1.5f);
 	panel->addChild(starSpr);
 
-	auto starAmountVa = Mod::get()->getSavedValue<int>("starAmountV");
+	auto starAmountVa = Mod::get()->getSavedValue<int>("pet-stars");
 	auto starAmount = CCLabelBMFont::create(std::to_string(starAmountVa).c_str(), "bigFont.fnt");
 	starAmount->setAnchorPoint({0.f, 0.5f});
 	starAmount->setPosition({35.f, 200.f});
@@ -154,7 +148,7 @@ bool PetLayer::init() {
 	moonSpr->setScale(1.5f);
 	panel->addChild(moonSpr);
 
-	auto moonAmountVa = Mod::get()->getSavedValue<int>("moonAmountV");
+	auto moonAmountVa = Mod::get()->getSavedValue<int>("pet-moons");
 	auto moonAmount = CCLabelBMFont::create(std::to_string(moonAmountVa).c_str(), "bigFont.fnt");
 	moonAmount->setAnchorPoint({0.f, 0.5f});
 	moonAmount->setPosition({35.f, 175.f});
@@ -182,18 +176,11 @@ void PetLayer::onSettingsBtn(CCObject* sender) {
 }
 
 void PetLayer::onUpgradeBtn(CCObject* sender) {
-	Notification::create(fmt::format("Stats: {}", Mod::get()->getSavedValue<int>("current-stars")), NotificationIcon::Info)->show();
+	Notification::create(fmt::format("Stats: {}", GameStatsManager::sharedState()->getStat("28")), NotificationIcon::Info)->show();
 }
 
-void PetLayer::onRenameBtn(CCObject* sender) {
-	RenamePopup::create(m_petName, [this](std::string newName) {
-    m_petName = std::move(newName);
-
-    geode::Mod::get()->setSavedValue<std::string>(kPetNameKey, m_petName);
-
-    if (m_titleLabel) m_titleLabel->setString(m_petName.c_str());
-})->show();
-
+void PetLayer::onRenameBtn(CCObject*) {
+    RenamePopup::create("Grinding Pet")->show();
 }
 
 void PetLayer::onBack(CCObject*) {

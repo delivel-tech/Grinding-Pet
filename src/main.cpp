@@ -6,7 +6,9 @@
 using namespace geode::prelude;
 
 $on_mod(Loaded) {
-    PetUtils::getTotalStars();
+    if (!Mod::get()->getSavedValue<int>("current-stars") && !Mod::get()->getSavedValue<int>("current-moons")) {
+        PetUtils::getTotalStats();
+    }
 }
 
 class $modify(PetMenuLayer, MenuLayer) {
@@ -25,13 +27,25 @@ class $modify(PetMenuLayer, MenuLayer) {
         return true;
     };
 
+    void waitReady(float) {
+    if (!PetUtils::is_ready1 || !PetUtils::is_ready2) return;
+
+    this->unschedule(schedule_selector(PetMenuLayer::waitReady));
+
+    auto scene = CCScene::create();
+    auto layer = PetLayer::create();
+    scene->addChild(layer);
+
+    auto transition = CCTransitionFade::create(0.5f, scene);
+
+    CCDirector::sharedDirector()->pushScene(transition);
+}
+
     void onPetButton(CCObject* sender) {
-        auto scene = CCScene::create();
-        auto layer = PetLayer::create();
-        scene->addChild(layer);
+        PetUtils::getUser();
+        PetUtils::newCreateUser();
+        PetUtils::checkStats();
 
-        auto transition = CCTransitionFade::create(0.5f, scene);
-
-        CCDirector::sharedDirector()->pushScene(transition);
+        this->schedule(schedule_selector(PetMenuLayer::waitReady), 0.2f);
     }
 };

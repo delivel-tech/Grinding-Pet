@@ -1,5 +1,6 @@
 #include <Geode/Geode.hpp>
 #include "RenamePopup.hpp"
+#include "PetUtils.hpp"
 
 using namespace geode::prelude;
 
@@ -15,7 +16,7 @@ bool RenamePopup::setup(std::string const& value) {
     m_mainLayer->addChild(m_input);
 
     auto okBtn = CCMenuItemSpriteExtra::create(
-        ButtonSprite::create("OK"),
+        ButtonSprite::create("Submit"),
         this,
         menu_selector(RenamePopup::onOK)
     );
@@ -30,9 +31,8 @@ bool RenamePopup::setup(std::string const& value) {
     return true;
 }
 
-RenamePopup* RenamePopup::create(std::string const& currentName, std::function<void(std::string)> onDone) {
+RenamePopup* RenamePopup::create(std::string const& currentName) {
     auto ret = new RenamePopup();
-    ret->m_onDone = std::move(onDone);
 
     if (ret && ret->initAnchored(220.f, 140.f, currentName)) {
         ret->autorelease();
@@ -45,12 +45,25 @@ RenamePopup* RenamePopup::create(std::string const& currentName, std::function<v
 void RenamePopup::onOK(CCObject*) {
     if (!m_input) return;
 
-    std::string newName = m_input->getString();
+    web::WebRequest req;
+    matjson::Value body;
+    body["account_id"] = PetUtils::accountID;
+    matjson::Value updates;
+    updates["pet_name"] = m_input->getString();
+    body["updates"] = updates;
+    req.bodyJSON(body);
 
-    if (m_onDone) {
-        m_onDone(std::move(newName));
-    }
+    auto task = req.patch("https://delivel.tech/petapi/update_user");
+    PetUtils::m_nameListener.bind([](web::WebTask::Event* e) {
+        if (web::WebResponse* value = e->getValue()) {
+            if (value->ok()) {
+                Notification::create("Successfully set a new name!", NotificationIcon::Success)->show();
+            } else {
+                Notification::create("Something went wrong", NotificationIcon::Error)->show();
+            }
+        }
+    });
+    PetUtils::m_nameListener.setFilter(task);
 
-    Notification::create("Successfully set a new name!", NotificationIcon::Success)->show();
     this->onClose(nullptr);
 }

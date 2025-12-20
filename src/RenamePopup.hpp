@@ -7,13 +7,11 @@ protected:
 
 public:
     static RenamePopup* create(
-        std::string const& currentName,
-        std::function<void(std::string)> onDone
+        std::string const& currentName
     );
 
     void onOK(cocos2d::CCObject*);
 
 private:
     geode::TextInput* m_input = nullptr;
-    std::function<void(std::string)> m_onDone;
 };
