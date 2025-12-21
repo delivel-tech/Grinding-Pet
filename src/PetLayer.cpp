@@ -3,6 +3,7 @@
 #include <Geode/fmod/fmod.h>
 #include "RenamePopup.hpp"
 #include "PetUtils.hpp"
+#include <Geode/utils/coro.hpp>
 
 using namespace geode::prelude;
 
@@ -19,9 +20,6 @@ PetLayer* PetLayer::create() {
 
 bool PetLayer::init() {
 	if (!CCLayer::init()) return false;
-
-	PetUtils::is_ready1 = false;
-	PetUtils::is_ready2 = false;
 
 	auto audio = GameManager::sharedState();
 	auto audio1 = FMODAudioEngine::sharedEngine();
@@ -93,7 +91,7 @@ bool PetLayer::init() {
 	m_titleLabel->setPosition(panelCS.width / 2, panelCS.height - 28.f);
 	panel->addChild(m_titleLabel);
 
-	auto settingsSpr = CCSprite::createWithSpriteFrameName("accountBtn_settings_001.png");
+	auto settingsSpr = CCSprite::createWithSpriteFrameName("GJ_optionsBtn02_001.png");
 
 	auto btnMenu = CCMenu::create();
 	btnMenu->setPosition(panelCS.width / 2, panelCS.height / 2);
@@ -102,6 +100,13 @@ bool PetLayer::init() {
 	auto settingsBtn = CCMenuItemSpriteExtra::create(settingsSpr, this, menu_selector(PetLayer::onSettingsBtn));
 	settingsBtn->setPosition(panelCS.width / 2 - 30.f, panelCS.height / 2 - 30.f);
 	btnMenu->addChild(settingsBtn);
+
+	auto reloadSpr = CCSprite::createWithSpriteFrameName("GJ_replayBtn_001.png");
+	reloadSpr->setScale(0.65f);
+
+	auto reloadBtn = CCMenuItemSpriteExtra::create(reloadSpr, this, menu_selector(PetLayer::onReloadBtn));
+	reloadBtn->setPosition(panelCS.width / 2 - 30.f, panelCS.height / 2 - 73.f);
+	btnMenu->addChild(reloadBtn);
 
 	auto upgradeSpr = ButtonSprite::create("Upgrade Pet");
 	auto upgradeBtn = CCMenuItemSpriteExtra::create(upgradeSpr, this, menu_selector(PetLayer::onUpgradeBtn));
@@ -114,8 +119,8 @@ bool PetLayer::init() {
 	btnMenu->addChild(renameBtn);
 
 	auto petPanel = CCScale9Sprite::create("GJ_square05.png");
-	petPanel->setContentSize({120.f, 170.f});
-	petPanel->setPosition(0, 4);
+	petPanel->setContentSize({120.f, 140.f});
+	petPanel->setPosition(0, 12);
 	btnMenu->addChild(petPanel);
 
 	auto petShadow = CCSprite::createWithSpriteFrameName("chest_shadow_001.png");
@@ -124,36 +129,66 @@ bool PetLayer::init() {
 	petShadow->setOpacity(50.f);
 	petPanel->addChild(petShadow);
 
-	auto petIcon = CCSprite::createWithSpriteFrameName("player_01_001.png");
-	petIcon->setPosition({60.f, 65.f});
-	petIcon->setScale(1.7f);
-	petPanel->addChild(petIcon);
+	auto statsPanel = CCScale9Sprite::create("GJ_square05.png");
+	statsPanel->setContentSize({80.f, 80.f});
+	statsPanel->setPosition(-115.f, 15.f);
+	btnMenu->addChild(statsPanel);
+
+	auto infoPanel = CCScale9Sprite::create("GJ_square05.png");
+	infoPanel->setContentSize({80.f, 80.f});
+	infoPanel->setPosition(115.f, 15.f);
+	btnMenu->addChild(infoPanel);
+
+	auto gm = GameManager::sharedState();
+	auto playerPet = SimplePlayer::create(gm->m_playerFrame);
+	playerPet->updatePlayerFrame(gm->m_playerFrame, IconType::Cube);
+	playerPet->setColors(gm->colorForIdx(gm->m_playerColor), gm->colorForIdx(gm->m_playerColor2));
+	if (gm->m_playerGlow != 0) {
+		playerPet->setGlowOutline(gm->colorForIdx(gm->m_playerGlowColor));
+	}
+	playerPet->setScale(1.5f);
+	playerPet->setPositionY(5.f);
+	btnMenu->addChild(playerPet);
 
 	auto starSpr = CCSprite::create("starSpr.png"_spr);
 	if (!starSpr) return true;
-	starSpr->setPosition({20.f, 200.f});
+	starSpr->setPosition({95.f, 170.f});
 	starSpr->setScale(1.5f);
 	panel->addChild(starSpr);
 
 	auto starAmountVa = Mod::get()->getSavedValue<int>("pet-stars");
 	auto starAmount = CCLabelBMFont::create(std::to_string(starAmountVa).c_str(), "bigFont.fnt");
 	starAmount->setAnchorPoint({0.f, 0.5f});
-	starAmount->setPosition({35.f, 200.f});
-	starAmount->setScale(0.5f);
+	starAmount->setPosition({110.f, 170.f});
+	limitNodeSize(starAmount, {40.f, 32.f}, 0.5f, 0.1f);
 	panel->addChild(starAmount);
 
 	auto moonSpr = CCSprite::create("moonSpr.png"_spr);
 	if (!moonSpr) return true;
-	moonSpr->setPosition({20.f, 175.f});
+	moonSpr->setPosition({95.f, 145.f});
 	moonSpr->setScale(1.5f);
 	panel->addChild(moonSpr);
 
 	auto moonAmountVa = Mod::get()->getSavedValue<int>("pet-moons");
 	auto moonAmount = CCLabelBMFont::create(std::to_string(moonAmountVa).c_str(), "bigFont.fnt");
 	moonAmount->setAnchorPoint({0.f, 0.5f});
-	moonAmount->setPosition({35.f, 175.f});
-	moonAmount->setScale(0.5f);
+	moonAmount->setPosition({110.f, 145.f});
+	limitNodeSize(moonAmount, {40.f, 32.f}, 0.5f, 0.1f);
 	panel->addChild(moonAmount);
+
+	auto backProgressBar = CCSprite::create("GJ_progressBar_001.png");
+	backProgressBar->setPosition({235.f, 65.f});
+	backProgressBar->setScale(0.875f);
+	backProgressBar->setColor({0, 0, 0});
+	backProgressBar->setOpacity(80.f);
+	panel->addChild(backProgressBar);
+
+	auto topProgressBar = CCSprite::create("GJ_progressBar_001.png");
+	topProgressBar->setPosition({235.f, 65.f});
+	topProgressBar->setScaleX(0.867f);
+	topProgressBar->setScaleY(0.7f);
+	topProgressBar->setColor({ 147, 208, 255 });
+	panel->addChild(topProgressBar);
 
 	return true;
 }
@@ -175,8 +210,23 @@ void PetLayer::onSettingsBtn(CCObject* sender) {
 	Notification::create("Settings callback placeholder", NotificationIcon::Info)->show();
 }
 
+Task<void> PetLayer::runSyncFlow() {
+	Notification::create("[Grinding Pet] Syncing...", NotificationIcon::Loading)->show();
+	
+	co_await PetUtils::newCreateUser();
+	co_await PetUtils::checkStats();
+
+	Notification::create("[Grinding Pet] Synced data.", NotificationIcon::Success)->show();
+
+	co_return;
+}
+
+void PetLayer::onReloadBtn(CCObject* sender) {
+	coro::spawn << PetLayer::runSyncFlow();
+}
+
 void PetLayer::onUpgradeBtn(CCObject* sender) {
-	Notification::create(fmt::format("Stats: {}", GameStatsManager::sharedState()->getStat("28")), NotificationIcon::Info)->show();
+	Notification::create(fmt::format("Stats: {}", Mod::get()->getSavedValue<std::string>("argon-token")), NotificationIcon::Info)->show();
 }
 
 void PetLayer::onRenameBtn(CCObject*) {

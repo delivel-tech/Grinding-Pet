@@ -10,7 +10,8 @@ public:
         std::string const& currentName
     );
 
-    void onOK(cocos2d::CCObject*);
+    geode::Task<void> onOKTask();
+    void onOK(CCObject*);
 
 private:
     geode::TextInput* m_input = nullptr;

@@ -1,6 +1,7 @@
 #include <Geode/Geode.hpp>
 #include "RenamePopup.hpp"
 #include "PetUtils.hpp"
+#include <Geode/utils/coro.hpp>
 
 using namespace geode::prelude;
 
@@ -42,8 +43,11 @@ RenamePopup* RenamePopup::create(std::string const& currentName) {
     return nullptr;
 }
 
-void RenamePopup::onOK(CCObject*) {
-    if (!m_input) return;
+Task<void> RenamePopup::onOKTask() {
+    if (!m_input) co_return;
+
+    auto popup = UploadActionPopup::create(nullptr, "Changing pet's name...");
+    popup->show();
 
     web::WebRequest req;
     matjson::Value body;
@@ -53,17 +57,16 @@ void RenamePopup::onOK(CCObject*) {
     body["updates"] = updates;
     req.bodyJSON(body);
 
-    auto task = req.patch("https://delivel.tech/petapi/update_user");
-    PetUtils::m_nameListener.bind([](web::WebTask::Event* e) {
-        if (web::WebResponse* value = e->getValue()) {
-            if (value->ok()) {
-                Notification::create("Successfully set a new name!", NotificationIcon::Success)->show();
-            } else {
-                Notification::create("Something went wrong", NotificationIcon::Error)->show();
-            }
-        }
-    });
-    PetUtils::m_nameListener.setFilter(task);
+    auto response = co_await req.patch("https://delivel.tech/petapi/update_user");
+    
+    if (response.ok()) {
+        popup->showSuccessMessage("Pet's name changed!");
+    } else {
+        popup->showFailMessage("Something went wrong.");
+    }
+    co_return;
+}
 
-    this->onClose(nullptr);
+void RenamePopup::onOK(CCObject*) {
+    coro::spawn << onOKTask();
 }

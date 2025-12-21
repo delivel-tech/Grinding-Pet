@@ -12,6 +12,8 @@ public:
     void onSettingsBtn(cocos2d::CCObject* sender);
     void onUpgradeBtn(cocos2d::CCObject* sender);
     void onRenameBtn(cocos2d::CCObject* sender);
+    void onReloadBtn(cocos2d::CCObject* sender);
+    static geode::Task<void> runSyncFlow();
 
 private:
     cocos2d::CCSprite* m_bg1 = nullptr;

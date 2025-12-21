@@ -1,5 +1,6 @@
 #include "PetUtils.hpp"
 #include <Geode/utils/web.hpp>
+#include <Geode/utils/coro.hpp>
 
 using namespace geode::prelude;
 
@@ -11,15 +12,14 @@ void PetUtils::getTotalStats() {
     Mod::get()->setSavedValue("current-moons", moons);
 }
 
-void PetUtils::checkStats() {
+Task<void> PetUtils::checkStats() {
     Mod::get()->setSavedValue("last-stars", Mod::get()->getSavedValue<int>("current-stars"));
     Mod::get()->setSavedValue("last-moons", Mod::get()->getSavedValue<int>("current-moons"));
     PetUtils::getTotalStats();
+    co_await PetUtils::getUser();
 
     if (Mod::get()->getSavedValue<int>("current-stars") != Mod::get()->getSavedValue<int>("last-stars")) {
         auto delta = Mod::get()->getSavedValue<int>("current-stars") - Mod::get()->getSavedValue<int>("last-stars");
-
-        PetUtils::getUser();
         
         web::WebRequest req;
         matjson::Value body;
@@ -30,26 +30,15 @@ void PetUtils::checkStats() {
 
         req.bodyJSON(body);
 
-        auto task = req.patch("https://delivel.tech/petapi/update_user");
+        auto response = co_await req.patch("https://delivel.tech/petapi/update_user");
 
-        PetUtils::m_listener2.bind([](web::WebTask::Event* e) {
-        if (web::WebResponse* value = e->getValue()) {
-            if (value->ok()) {
-                PetUtils::is_ready2 = true;
-            } else {
-                PetUtils::is_ready2 = true;
-            }
+        if (!response.ok()) {
+            co_return;
         }
-        });
-        PetUtils::m_listener2.setFilter(task);
-
-        PetUtils::getUser();
     }
 
     if (Mod::get()->getSavedValue<int>("current-moons") != Mod::get()->getSavedValue<int>("last-moons")) {
         auto delta = Mod::get()->getSavedValue<int>("current-moons") - Mod::get()->getSavedValue<int>("last-moons");
-
-        PetUtils::getUser();
         
         web::WebRequest req;
         matjson::Value body;
@@ -59,33 +48,20 @@ void PetUtils::checkStats() {
         body["updates"] = updates;
 
         req.bodyJSON(body);
-        auto task = req.patch("https://delivel.tech/petapi/update_user");
-        PetUtils::m_listener3.bind([](web::WebTask::Event* e) {
-        if (web::WebResponse* value = e->getValue()) {
-            if (value->ok()) {
-                is_ready2 = true;
-            } else {
-                PetUtils::is_ready2 = true;
-            }
+        auto response = co_await req.patch("https://delivel.tech/petapi/update_user");
+
+        if (!response.ok()) {
+            co_return;
         }
-    });
-    PetUtils::m_listener3.setFilter(task);
-    PetUtils::getUser();
     }
-    PetUtils::is_ready2 = true;
+    co_await PetUtils::getUser();
+    co_return;
 }
 
 int PetUtils::accountID = GJAccountManager::get()->m_accountID;
 std::string PetUtils::username = GJAccountManager::get()->m_username;
-EventListener<web::WebTask> PetUtils::m_listener;
-EventListener<web::WebTask> PetUtils::m_listener1;
-EventListener<web::WebTask> PetUtils::m_listener2;
-EventListener<web::WebTask> PetUtils::m_listener3;
-EventListener<web::WebTask> PetUtils::m_nameListener;
-bool PetUtils::is_ready1;
-bool PetUtils::is_ready2;
 
-void PetUtils::newCreateUser() {
+Task<void> PetUtils::newCreateUser() {
     web::WebRequest req;
 
     matjson::Value body;
@@ -98,42 +74,35 @@ void PetUtils::newCreateUser() {
 
     req.bodyJSON(body);
 
-    auto task = req.post("https://delivel.tech/petapi/check_create_user");
+    auto response = co_await req.post("https://delivel.tech/petapi/check_create_user");
 
-    PetUtils::m_listener1.bind([](web::WebTask::Event* e) {
-        if (web::WebResponse* value = e->getValue()) {
-            if (value->ok()) {
-                PetUtils::is_ready1 = true;
-            } else {
-                log::error("req failed");
-            }
-        }
-    });
-    PetUtils::m_listener1.setFilter(task);
+    if (!response.ok()) {
+        co_return;
+    }
 }
 
-void PetUtils::getUser() {
+Task<void> PetUtils::getUser() {
     web::WebRequest req;
 
-    auto task = req.get(fmt::format("https://delivel.tech/petapi/get_user?account_id={}", PetUtils::accountID));
+    auto response = co_await req.get(fmt::format("https://delivel.tech/petapi/get_user?account_id={}", PetUtils::accountID));
 
-    PetUtils::m_listener.bind([](web::WebTask::Event* e) {
+    if (!response.ok()) {
+        log::error("getUser request failed");
+        co_return;
+    }
+    auto jsonRes = response.json();
+    if (!jsonRes) {
+        log::error("invalid json");
+        co_return;
+    }
+    auto json = jsonRes.unwrap();
+    auto user = json["user"];
 
-        if (web::WebResponse* value = e->getValue()) {
-            if (value->ok()) {
-            auto jsonRes = value->json();
-            auto json = jsonRes.unwrap();
-            auto user = json["user"];
+    Mod::get()->setSavedValue("pet-stars", user["pet_stars"].asInt().unwrapOrDefault());
+    Mod::get()->setSavedValue("pet-moons", user["pet_moons"].asInt().unwrapOrDefault());
+    Mod::get()->setSavedValue("pet-name", user["pet_name"].asString().unwrapOrDefault());
+    Mod::get()->setSavedValue("isAdmin", user["isAdmin"].asInt().unwrapOrDefault());
 
-            Mod::get()->setSavedValue("pet-stars", user["pet_stars"].asInt().unwrapOrDefault());
-            Mod::get()->setSavedValue("pet-moons", user["pet_moons"].asInt().unwrapOrDefault());
-            Mod::get()->setSavedValue("pet-name", user["pet_name"].asString().unwrapOrDefault());
-            Mod::get()->setSavedValue("isAdmin", user["isAdmin"].asInt().unwrapOrDefault());
-            } else {
-                log::error("req failed");
-            }
-        }
-    });
-    PetUtils::m_listener.setFilter(task);
+    co_return;
 }
 
