@@ -150,6 +150,21 @@ bool PetLayer::init() {
 	playerPet->setPositionY(5.f);
 	btnMenu->addChild(playerPet);
 
+	auto lvlSpr = CCSprite::createWithSpriteFrameName("shard0202ShardSmall_001.png");
+	if (!lvlSpr) {
+		log::error("lvlSpr not found");
+		return true;
+	}
+	lvlSpr->setPosition({320.f, 170.f});
+	lvlSpr->setScale(1.2f);
+	panel->addChild(lvlSpr);
+
+	auto lvlAmount = CCLabelBMFont::create(fmt::format("Lvl: {}", Mod::get()->getSavedValue<int>("pet-level")).c_str(), "bigFont.fnt");
+	lvlAmount->setAnchorPoint({0.f, 0.5f});
+	lvlAmount->setPosition({332.f, 170.f});
+	limitNodeSize(lvlAmount, {40.f, 32.f}, 0.5f, 0.1f);
+	panel->addChild(lvlAmount);
+
 	auto starSpr = CCSprite::create("starSpr.png"_spr);
 	if (!starSpr) return true;
 	starSpr->setPosition({95.f, 170.f});
@@ -187,7 +202,7 @@ bool PetLayer::init() {
 	topProgressBar->setPosition({235.f, 65.f});
 	topProgressBar->setScaleX(0.867f);
 	topProgressBar->setScaleY(0.7f);
-	topProgressBar->setColor({ 147, 208, 255 });
+	topProgressBar->setColor({ 235, 255, 93 });
 	panel->addChild(topProgressBar);
 
 	return true;

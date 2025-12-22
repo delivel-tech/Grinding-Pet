@@ -52,6 +52,7 @@ Task<void> RenamePopup::onOKTask() {
     web::WebRequest req;
     matjson::Value body;
     body["account_id"] = PetUtils::accountID;
+    body["authtoken"] = Mod::get()->getSavedValue<std::string>("argon-token");
     matjson::Value updates;
     updates["pet_name"] = m_input->getString();
     body["updates"] = updates;
