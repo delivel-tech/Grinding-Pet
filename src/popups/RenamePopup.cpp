@@ -1,7 +1,7 @@
 #include <Geode/Geode.hpp>
-#include "RenamePopup.hpp"
-#include "PetUtils.hpp"
-#include "PetLayer.hpp"
+#include "popups/RenamePopup.hpp"
+#include "utils/PetUtils.hpp"
+#include "layers/PetLayer.hpp"
 #include <Geode/utils/coro.hpp>
 
 using namespace geode::prelude;

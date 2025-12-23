@@ -1,7 +1,7 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/MenuLayer.hpp>
-#include "PetLayer.hpp"
-#include "PetUtils.hpp"
+#include "layers/PetLayer.hpp"
+#include "utils/PetUtils.hpp"
 #include <argon/argon.hpp>
 #include <Geode/utils/coro.hpp>
 

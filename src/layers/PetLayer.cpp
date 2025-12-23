@@ -1,8 +1,8 @@
 #include <Geode/Geode.hpp>
-#include "PetLayer.hpp"
+#include "layers/PetLayer.hpp"
 #include <Geode/fmod/fmod.h>
-#include "RenamePopup.hpp"
-#include "PetUtils.hpp"
+#include "popups/RenamePopup.hpp"
+#include "utils/PetUtils.hpp"
 #include <Geode/utils/coro.hpp>
 
 using namespace geode::prelude;
@@ -301,7 +301,56 @@ bool PetLayer::init() {
 		panel->removeChild(leftStarBar);
 	}
 
+	auto infoBtnSpr = CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
+	auto infoBtn = CCMenuItemSpriteExtra::create(infoBtnSpr, this, menu_selector(PetLayer::onInfoBtn));
+	infoBtn->setPosition(265.f, -140.f);
+	btnMenu->addChild(infoBtn);
+
 	return true;
+}
+
+void PetLayer::onInfoBtn(CCObject* sender) {
+	MDPopup::create(
+		"Grinding Pet",
+		"### <cj>How to use</c> the mod?\n"
+		"Well, once this mod is installed, it tracks your <cg>in-game stats</c>. Once you sync your data, newly grinded stats will turn to <cy>Pet Stats</c>.\n"
+		"You can use <cy>Pet Stats</c> for evolving your pet, for example, you need to reach N amount of stars to upgrade <cb>Pet's Level.</c>\n"
+		"<cy>Pet Stars</c> are used for long-time pet evolving, while <cp>Pet Moons</c> are used for small purchases like <cg>Pet Decorations</c>, or rareness.\n"
+		"<cp>Pet Level</c> allows you to open new features, like shop. <cg>Pet Rareness</c> is just a status of your pet, evolved by moons, doesn't give any perks."
+		"\r\n\r\n---\r\n\r\n"
+		"### <cj>Additional info</c> regarding the mod:\n"
+		"<cy>First:</c> Your statistics are not automatically updated except when mod is loaded, therefore you'll need to use Sync button in Pet Menu.\n"
+		"<co>Secondly:</c> Pet statistics DOESN'T change real stars or moons, it can only load. So that you don't need to worry, it doesn't go against Leaderboard Guidelines.\n"
+		"<cg>Thirdly:</c> Once your data is synced, it's stored in User Database, so if you reinstall the mod, you won't lose your data! Mod doesn't store any private information.\n"
+		"<cr>Fourthly:</c> This mod uses Argon for authentification purposes. By using Grinding Pet you allow it to send a one-time message to a bot account.\n"
+		"\r\n\r\n---\r\n\r\n"
+		"### <cj>Rules:</c>\n"
+		"<cy>Firstly:</c> As this mod is online, keep <cb>Pet Name</c> appropriate. Naming it bad may result in <cy>Ban</c> from the mod.\n"
+		"<cp>Secondly:</c> Don't modify any statistics in mod, you will be <cy>banned</c>.\n",
+		"OK"
+	)->show();
+}
+
+void PetLayer::onInfoBtnOutside() {
+	MDPopup::create(
+		"Grinding Pet",
+		"### <cj>How to use</c> the mod?\n"
+		"Well, once this mod is installed, it tracks your <cg>in-game stats</c>. Once you sync your data, newly grinded stats will turn to <cy>Pet Stats</c>.\n"
+		"You can use <cy>Pet Stats</c> for evolving your pet, for example, you need to reach N amount of stars to upgrade <cb>Pet's Level.</c>\n"
+		"<cy>Pet Stars</c> are used for long-time pet evolving, while <cp>Pet Moons</c> are used for small purchases like <cg>Pet Decorations</c>, or rareness.\n"
+		"<cp>Pet Level</c> allows you to open new features, like shop. <cg>Pet Rareness</c> is just a status of your pet, evolved by moons, doesn't give any perks.\n"
+		"\r\n\r\n---\r\n\r\n"
+		"### <cj>Additional info</c> regarding the mod:\n"
+		"<cy>First:</c> Your statistics are not automatically updated except when mod is loaded, therefore you'll need to use Sync button in Pet Menu.\n"
+		"<co>Secondly:</c> Pet statistics DOESN'T change real stars or moons, it can only load. So that you don't need to worry, it doesn't go against Leaderboard Guidelines.\n"
+		"<cg>Thirdly:</c> Once your data is synced, it's stored in User Database, so if you reinstall the mod, you won't lose your data! Mod doesn't store any private information.\n"
+		"<cr>Fourthly:</c> This mod uses Argon for authentification purposes. By using Grinding Pet you allow it to send a one-time message to a bot account.\n"
+		"\r\n\r\n---\r\n\r\n"
+		"### <cj>Rules:</c>\n"
+		"<cy>Firstly:</c> As this mod is online, keep <cb>Pet Name</c> appropriate. Naming it bad may result in <cy>Ban</c> from the mod.\n"
+		"<cp>Secondly:</c> Don't modify any statistics in mod, you will be <cy>banned</c>.\n",
+		"OK"
+	)->show();
 }
 
 void PetLayer::update(float dt) {

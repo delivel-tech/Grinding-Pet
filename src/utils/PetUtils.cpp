@@ -1,5 +1,5 @@
-#include "PetUtils.hpp"
-#include "PetLayer.hpp"
+#include "utils/PetUtils.hpp"
+#include "layers/PetLayer.hpp"
 #include <Geode/utils/web.hpp>
 #include <Geode/utils/coro.hpp>
 
