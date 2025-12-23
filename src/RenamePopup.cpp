@@ -1,6 +1,7 @@
 #include <Geode/Geode.hpp>
 #include "RenamePopup.hpp"
 #include "PetUtils.hpp"
+#include "PetLayer.hpp"
 #include <Geode/utils/coro.hpp>
 
 using namespace geode::prelude;
@@ -65,6 +66,7 @@ Task<void> RenamePopup::onOKTask() {
     } else {
         popup->showFailMessage("Something went wrong.");
     }
+    coro::spawn << PetLayer::runSyncFlow();
     co_return;
 }
 

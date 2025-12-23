@@ -1,4 +1,5 @@
 #include "PetUtils.hpp"
+#include "PetLayer.hpp"
 #include <Geode/utils/web.hpp>
 #include <Geode/utils/coro.hpp>
 
@@ -10,6 +11,114 @@ void PetUtils::getTotalStats() {
     auto moons = gsm->getStat("28");
     Mod::get()->setSavedValue("current-stars", stars);
     Mod::get()->setSavedValue("current-moons", moons);
+}
+
+Task<void> PetUtils::upgradeLevelTo2() {
+    auto popup = UploadActionPopup::create(nullptr, "Upgrading pet...");
+    popup->show();
+    co_await PetUtils::getUser();
+    web::WebRequest req;
+    matjson::Value body;
+    body["account_id"] = PetUtils::accountID;
+    body["authtoken"] = Mod::get()->getSavedValue<std::string>("argon-token");
+    matjson::Value updates;
+    updates["pet_level"] = 2;
+    updates["pet_stars"] = Mod::get()->getSavedValue<int>("pet-stars") - 2000.f;
+    body["updates"] = updates;
+
+    req.bodyJSON(body);
+
+    auto response = co_await req.patch("https://delivel.tech/petapi/update_user");
+
+    if (!response.ok()) {
+        popup->showFailMessage("Upgrading failed.");
+        co_return;
+    }
+    popup->showSuccessMessage("Pet upgraded!");
+    coro::spawn << PetLayer::runSyncFlow();
+
+    co_return;
+}
+
+Task<void> PetUtils::upgradeLevelTo3() {
+    auto popup = UploadActionPopup::create(nullptr, "Upgrading pet...");
+    popup->show();
+    co_await PetUtils::getUser();
+    web::WebRequest req;
+    matjson::Value body;
+    body["account_id"] = PetUtils::accountID;
+    body["authtoken"] = Mod::get()->getSavedValue<std::string>("argon-token");
+    matjson::Value updates;
+    updates["pet_level"] = 3;
+    updates["pet_stars"] = Mod::get()->getSavedValue<int>("pet-stars") - 5000.f;
+    body["updates"] = updates;
+
+    req.bodyJSON(body);
+
+    auto response = co_await req.patch("https://delivel.tech/petapi/update_user");
+
+    if (!response.ok()) {
+        popup->showFailMessage("Upgrading failed.");
+        co_return;
+    }
+    popup->showSuccessMessage("Pet upgraded!");
+    coro::spawn << PetLayer::runSyncFlow();
+
+    co_return;
+}
+
+Task<void> PetUtils::upgradeLevelTo4() {
+    auto popup = UploadActionPopup::create(nullptr, "Upgrading pet...");
+    popup->show();
+    co_await PetUtils::getUser();
+    web::WebRequest req;
+    matjson::Value body;
+    body["account_id"] = PetUtils::accountID;
+    body["authtoken"] = Mod::get()->getSavedValue<std::string>("argon-token");
+    matjson::Value updates;
+    updates["pet_level"] = 4;
+    updates["pet_stars"] = Mod::get()->getSavedValue<int>("pet-stars") - 20000.f;
+    body["updates"] = updates;
+
+    req.bodyJSON(body);
+
+    auto response = co_await req.patch("https://delivel.tech/petapi/update_user");
+
+    if (!response.ok()) {
+        popup->showFailMessage("Upgrading failed.");
+        co_return;
+    }
+    popup->showSuccessMessage("Pet upgraded!");
+    coro::spawn << PetLayer::runSyncFlow();
+
+    co_return;
+}
+
+Task<void> PetUtils::upgradeLevelTo5() {
+    auto popup = UploadActionPopup::create(nullptr, "Upgrading pet...");
+    popup->show();
+    co_await PetUtils::getUser();
+    web::WebRequest req;
+    matjson::Value body;
+    body["account_id"] = PetUtils::accountID;
+    body["authtoken"] = Mod::get()->getSavedValue<std::string>("argon-token");
+    matjson::Value updates;
+    updates["pet_level"] = 5;
+    updates["pet_stars"] = Mod::get()->getSavedValue<int>("pet-stars") - 50000.f;
+    body["updates"] = updates;
+
+    req.bodyJSON(body);
+
+    auto response = co_await req.patch("https://delivel.tech/petapi/update_user");
+
+    if (!response.ok()) {
+        popup->showFailMessage("Upgrading failed.");
+        co_return;
+    }
+    popup->showSuccessMessage("Pet upgraded!");
+    coro::spawn << PetLayer::runSyncFlow();
+
+    co_return;
 }
 
 Task<void> PetUtils::checkStats() {

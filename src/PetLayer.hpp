@@ -13,6 +13,7 @@ public:
     void onUpgradeBtn(cocos2d::CCObject* sender);
     void onRenameBtn(cocos2d::CCObject* sender);
     void onReloadBtn(cocos2d::CCObject* sender);
+    void uiUpdate();
     static geode::Task<void> runSyncFlow();
 
 private:

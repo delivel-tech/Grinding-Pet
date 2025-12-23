@@ -199,11 +199,107 @@ bool PetLayer::init() {
 	panel->addChild(backProgressBar);
 
 	auto topProgressBar = CCSprite::create("GJ_progressBar_001.png");
-	topProgressBar->setPosition({235.f, 65.f});
-	topProgressBar->setScaleX(0.867f);
-	topProgressBar->setScaleY(0.7f);
 	topProgressBar->setColor({ 235, 255, 93 });
-	panel->addChild(topProgressBar);
+	auto progressBar = CCProgressTimer::create(topProgressBar);
+	progressBar->setPosition({235.f, 65.f});
+	progressBar->setScaleX(0.867f);
+	progressBar->setScaleY(0.7f);
+	progressBar->setType(kCCProgressTimerTypeBar);
+	progressBar->setMidpoint({0.f, 0.5f});
+	progressBar->setBarChangeRate({1.f, 0.f});
+	panel->addChild(progressBar);
+
+	auto leftStarBar = CCLabelBMFont::create(std::to_string(starAmountVa).c_str(), "bigFont.fnt");
+	limitNodeSize(leftStarBar, {40.f, 32.f}, 0.4f, 0.1f);
+	leftStarBar->setPosition(110.f, 59.f);
+	leftStarBar->setAnchorPoint({0.5f, 0.f});
+	panel->addChild(leftStarBar);
+
+	if (Mod::get()->getSavedValue<int>("pet-level") == 1) {
+		auto rightStarBar = CCLabelBMFont::create(std::to_string(2000).c_str(), "bigFont.fnt");
+	    limitNodeSize(rightStarBar, {40.f, 32.f}, 0.4f, 0.1f);
+	    rightStarBar->setPosition(343.f, 65.f);
+	    rightStarBar->setAnchorPoint({0.f, 0.5f});
+	    panel->addChild(rightStarBar);
+
+		float ratio = ((float)Mod::get()->getSavedValue<int>("pet-stars") / 2000.f) * 100.f;
+		if (ratio > 100) {
+			ratio = 100.f;
+		}
+		progressBar->setPercentage(ratio);
+
+		auto estimatedInBar = CCLabelBMFont::create(fmt::format("{}%", (int)ratio).c_str(), "bigFont.fnt");
+		limitNodeSize(estimatedInBar, {40.f, 32.f}, 0.4f, 0.1f);
+		estimatedInBar->setPosition(232.f, 65.f);
+		panel->addChild(estimatedInBar);
+	}
+
+	if (Mod::get()->getSavedValue<int>("pet-level") == 2) {
+		auto rightStarBar = CCLabelBMFont::create(std::to_string(5000).c_str(), "bigFont.fnt");
+	    limitNodeSize(rightStarBar, {40.f, 32.f}, 0.4f, 0.1f);
+	    rightStarBar->setPosition(343.f, 65.f);
+	    rightStarBar->setAnchorPoint({0.f, 0.5f});
+	    panel->addChild(rightStarBar);
+
+		float ratio = ((float)Mod::get()->getSavedValue<int>("pet-stars") / 5000.f) * 100.f;
+		if (ratio > 100) {
+			ratio = 100.f;
+		}
+		progressBar->setPercentage(ratio);
+
+		auto estimatedInBar = CCLabelBMFont::create(fmt::format("{}%", (int)ratio).c_str(), "bigFont.fnt");
+		limitNodeSize(estimatedInBar, {40.f, 32.f}, 0.4f, 0.1f);
+		estimatedInBar->setPosition(232.f, 65.f);
+		panel->addChild(estimatedInBar);
+	}
+
+	if (Mod::get()->getSavedValue<int>("pet-level") == 3) {
+		auto rightStarBar = CCLabelBMFont::create(std::to_string(20000).c_str(), "bigFont.fnt");
+	    limitNodeSize(rightStarBar, {40.f, 32.f}, 0.4f, 0.1f);
+	    rightStarBar->setPosition(343.f, 65.f);
+	    rightStarBar->setAnchorPoint({0.f, 0.5f});
+	    panel->addChild(rightStarBar);
+
+		float ratio = ((float)Mod::get()->getSavedValue<int>("pet-stars") / 20000.f) * 100.f;
+		if (ratio > 100) {
+			ratio = 100.f;
+		}
+		progressBar->setPercentage(ratio);
+
+		auto estimatedInBar = CCLabelBMFont::create(fmt::format("{}%", (int)ratio).c_str(), "bigFont.fnt");
+		limitNodeSize(estimatedInBar, {40.f, 32.f}, 0.4f, 0.1f);
+		estimatedInBar->setPosition(232.f, 65.f);
+		panel->addChild(estimatedInBar);
+	}
+
+	if (Mod::get()->getSavedValue<int>("pet-level") == 4) {
+		auto rightStarBar = CCLabelBMFont::create(std::to_string(50000).c_str(), "bigFont.fnt");
+	    limitNodeSize(rightStarBar, {40.f, 32.f}, 0.4f, 0.1f);
+	    rightStarBar->setPosition(343.f, 65.f);
+	    rightStarBar->setAnchorPoint({0.f, 0.5f});
+	    panel->addChild(rightStarBar);
+
+		float ratio = ((float)Mod::get()->getSavedValue<int>("pet-stars") / 50000.f) * 100.f;
+		if (ratio > 100) {
+			ratio = 100.f;
+		}
+		progressBar->setPercentage(ratio);
+
+		auto estimatedInBar = CCLabelBMFont::create(fmt::format("{}%", (int)ratio).c_str(), "bigFont.fnt");
+		limitNodeSize(estimatedInBar, {40.f, 32.f}, 0.4f, 0.1f);
+		estimatedInBar->setPosition(232.f, 65.f);
+		panel->addChild(estimatedInBar);
+	}
+
+	if (Mod::get()->getSavedValue<int>("pet-level") == 5) {
+		progressBar->setPercentage(100.f);
+
+		auto estimatedInBar = CCLabelBMFont::create("Fully upgraded!", "bigFont.fnt");
+		estimatedInBar->setScale(0.4f);
+		estimatedInBar->setPosition(232.f, 65.f);
+		panel->addChild(estimatedInBar);
+		panel->removeChild(leftStarBar);
+	}
 
 	return true;
 }
@@ -241,7 +337,37 @@ void PetLayer::onReloadBtn(CCObject* sender) {
 }
 
 void PetLayer::onUpgradeBtn(CCObject* sender) {
-	Notification::create(fmt::format("Stats: {}", Mod::get()->getSavedValue<std::string>("argon-token")), NotificationIcon::Info)->show();
+	if (Mod::get()->getSavedValue<int>("pet-level") == 1) {
+		if (Mod::get()->getSavedValue<int>("pet-stars") >= 2000) {
+			coro::spawn << PetUtils::upgradeLevelTo2();
+		} else {
+			Notification::create("Reach 2000 pet stars!", NotificationIcon::Error)->show();
+		}
+	}
+	if (Mod::get()->getSavedValue<int>("pet-level") == 2) {
+		if (Mod::get()->getSavedValue<int>("pet-stars") >= 5000) {
+			coro::spawn << PetUtils::upgradeLevelTo3();
+		} else {
+			Notification::create("Reach 5000 pet stars!", NotificationIcon::Error)->show();
+		}
+	}
+	if (Mod::get()->getSavedValue<int>("pet-level") == 3) {
+		if (Mod::get()->getSavedValue<int>("pet-stars") >= 20000) {
+			coro::spawn << PetUtils::upgradeLevelTo4();
+		} else {
+			Notification::create("Reach 20000 pet stars!", NotificationIcon::Error)->show();
+		}
+	}
+	if (Mod::get()->getSavedValue<int>("pet-level") == 4) {
+		if (Mod::get()->getSavedValue<int>("pet-stars") >= 50000) {
+			coro::spawn << PetUtils::upgradeLevelTo5();
+		} else {
+			Notification::create("Reach 50000 pet stars!", NotificationIcon::Error)->show();
+		}
+	}
+	if (Mod::get()->getSavedValue<int>("pet-level") == 5) {
+		Notification::create("Your pet is fully upgraded!", NotificationIcon::Success)->show();
+	}
 }
 
 void PetLayer::onRenameBtn(CCObject*) {
