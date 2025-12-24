@@ -13,6 +13,87 @@ void PetUtils::getTotalStats() {
     Mod::get()->setSavedValue("current-moons", moons);
 }
 
+Task<void> PetUtils::upgradeRarenessToRare() {
+    auto popup = UploadActionPopup::create(nullptr, "Upgrading rareness...");
+    popup->show();
+    co_await PetUtils::getUser();
+    web::WebRequest req;
+    matjson::Value body;
+    body["account_id"] = PetUtils::accountID;
+    body["authtoken"] = Mod::get()->getSavedValue<std::string>("argon-token");
+    matjson::Value updates;
+    updates["pet_rareness"] = "Rare";
+    updates["pet_moons"] = Mod::get()->getSavedValue<int>("pet-moons") - 500.f;
+    body["updates"] = updates;
+
+    req.bodyJSON(body);
+
+    auto response = co_await req.patch("https://delivel.tech/petapi/update_user");
+
+    if (!response.ok()) {
+        popup->showFailMessage("Upgrading failed.");
+        co_return;
+    }
+    popup->showSuccessMessage("Rareness upgraded!");
+    coro::spawn << PetLayer::runSyncFlow();
+
+    co_return;
+}
+
+Task<void> PetUtils::upgradeRarenessToEpic() {
+    auto popup = UploadActionPopup::create(nullptr, "Upgrading rareness...");
+    popup->show();
+    co_await PetUtils::getUser();
+    web::WebRequest req;
+    matjson::Value body;
+    body["account_id"] = PetUtils::accountID;
+    body["authtoken"] = Mod::get()->getSavedValue<std::string>("argon-token");
+    matjson::Value updates;
+    updates["pet_rareness"] = "Epic";
+    updates["pet_moons"] = Mod::get()->getSavedValue<int>("pet-moons") - 3000.f;
+    body["updates"] = updates;
+
+    req.bodyJSON(body);
+
+    auto response = co_await req.patch("https://delivel.tech/petapi/update_user");
+
+    if (!response.ok()) {
+        popup->showFailMessage("Upgrading failed.");
+        co_return;
+    }
+    popup->showSuccessMessage("Rareness upgraded!");
+    coro::spawn << PetLayer::runSyncFlow();
+
+    co_return;
+}
+
+Task<void> PetUtils::upgradeRarenessToMythic() {
+    auto popup = UploadActionPopup::create(nullptr, "Upgrading rareness...");
+    popup->show();
+    co_await PetUtils::getUser();
+    web::WebRequest req;
+    matjson::Value body;
+    body["account_id"] = PetUtils::accountID;
+    body["authtoken"] = Mod::get()->getSavedValue<std::string>("argon-token");
+    matjson::Value updates;
+    updates["pet_rareness"] = "Mythic";
+    updates["pet_moons"] = Mod::get()->getSavedValue<int>("pet-moons") - 10000.f;
+    body["updates"] = updates;
+
+    req.bodyJSON(body);
+
+    auto response = co_await req.patch("https://delivel.tech/petapi/update_user");
+
+    if (!response.ok()) {
+        popup->showFailMessage("Upgrading failed.");
+        co_return;
+    }
+    popup->showSuccessMessage("Rareness upgraded!");
+    coro::spawn << PetLayer::runSyncFlow();
+
+    co_return;
+}
+
 Task<void> PetUtils::upgradeLevelTo2() {
     auto popup = UploadActionPopup::create(nullptr, "Upgrading pet...");
     popup->show();
@@ -206,6 +287,9 @@ Task<void> PetUtils::getUser() {
     Mod::get()->setSavedValue("pet-name", user["pet_name"].asString().unwrapOrDefault());
     Mod::get()->setSavedValue("is-admin", user["isAdmin"].asInt().unwrapOrDefault());
     Mod::get()->setSavedValue("pet-level", user["pet_level"].asInt().unwrapOrDefault());
+    Mod::get()->setSavedValue("pet-rareness", user["pet_rareness"].asString().unwrapOrDefault());
+    Mod::get()->setSavedValue("is-banned", user["isBanned"].asInt().unwrapOrDefault());
+    Mod::get()->setSavedValue("ban-reason", user["ban_reason"].asString().unwrapOrDefault());
 
     co_return;
 }

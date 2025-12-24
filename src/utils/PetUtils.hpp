@@ -17,6 +17,9 @@ public:
     static geode::Task<void> upgradeLevelTo3();
     static geode::Task<void> upgradeLevelTo4();
     static geode::Task<void> upgradeLevelTo5();
+    static geode::Task<void> upgradeRarenessToRare();
+    static geode::Task<void> upgradeRarenessToEpic();
+    static geode::Task<void> upgradeRarenessToMythic();
 };
 
 class PetReadyEvent : public Event {};

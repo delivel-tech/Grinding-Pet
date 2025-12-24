@@ -14,8 +14,8 @@ public:
     void onRenameBtn(cocos2d::CCObject* sender);
     void onReloadBtn(cocos2d::CCObject* sender);
     void onInfoBtn(cocos2d::CCObject* sender);
+    void onUpgradeRareBtn(cocos2d::CCObject* sender);
     static void onInfoBtnOutside();
-    void uiUpdate();
     static geode::Task<void> runSyncFlow();
 
 private:

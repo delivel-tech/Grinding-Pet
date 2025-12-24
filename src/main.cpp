@@ -44,6 +44,10 @@ class $modify(PetMenuLayer, MenuLayer) {
     };
 
     void onPetButton(CCObject* sender) {
+        if (Mod::get()->getSavedValue<int>("is-banned") == 1) {
+            FLAlertLayer::create("Banned", fmt::format("You have been <cj>banned from Grinding Pet</c>, if you believe it is a mistake, <cy>appeal</c> in our <cp>Discord Server.</c>\n<cy>Ban reason:</c> <cp>{}</c>.", Mod::get()->getSavedValue<std::string>("ban-reason")), "OK")->show();
+            return;
+        }
         auto scene = CCScene::create();
         auto layer = PetLayer::create();
         scene->addChild(layer);

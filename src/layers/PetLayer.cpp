@@ -108,6 +108,12 @@ bool PetLayer::init() {
 	reloadBtn->setPosition(panelCS.width / 2 - 30.f, panelCS.height / 2 - 73.f);
 	btnMenu->addChild(reloadBtn);
 
+	auto upgradeRareSpr = CCSprite::createWithSpriteFrameName("GJ_orderUpBtn_001.png");
+	upgradeRareSpr->setScale(0.8f);
+	auto upgradeRareBtn = CCMenuItemSpriteExtra::create(upgradeRareSpr, this, menu_selector(PetLayer::onUpgradeRareBtn));
+	upgradeRareBtn->setPosition(panelCS.width / 2 - 30.f, panelCS.height / 2 - 116.f);
+	btnMenu->addChild(upgradeRareBtn);
+
 	auto upgradeSpr = ButtonSprite::create("Upgrade Pet");
 	auto upgradeBtn = CCMenuItemSpriteExtra::create(upgradeSpr, this, menu_selector(PetLayer::onUpgradeBtn));
 	upgradeBtn->setPosition(100.f, -110.f);
@@ -164,6 +170,21 @@ bool PetLayer::init() {
 	lvlAmount->setPosition({332.f, 170.f});
 	limitNodeSize(lvlAmount, {40.f, 32.f}, 0.5f, 0.1f);
 	panel->addChild(lvlAmount);
+
+	auto rareSpr = CCSprite::createWithSpriteFrameName("shadowShardSmall_001.png");
+	if (!rareSpr) {
+		log::error("sprite not found");
+		return true;
+	}
+	rareSpr->setPosition({320.f, 145.f});
+	rareSpr->setScale(1.2f);
+	panel->addChild(rareSpr);
+
+	auto rare = CCLabelBMFont::create(Mod::get()->getSavedValue<std::string>("pet-rareness").c_str(), "bigFont.fnt");
+	rare->setAnchorPoint({0.f, 0.5f});
+	rare->setPosition({332.f, 145.f});
+	limitNodeSize(rare, {40.f, 32.f}, 0.5f, 0.1f);
+	panel->addChild(rare);
 
 	auto starSpr = CCSprite::create("starSpr.png"_spr);
 	if (!starSpr) return true;
@@ -309,6 +330,33 @@ bool PetLayer::init() {
 	return true;
 }
 
+void PetLayer::onUpgradeRareBtn(CCObject* sender) {
+	if (Mod::get()->getSavedValue<std::string>("pet-rareness") == "Common") {
+		if (Mod::get()->getSavedValue<int>("pet-moons") >= 500) {
+			coro::spawn << PetUtils::upgradeRarenessToRare();
+		} else {
+			Notification::create("Reach 500 pet moons!", NotificationIcon::Error)->show();
+		}
+	}
+	if (Mod::get()->getSavedValue<std::string>("pet-rareness") == "Rare") {
+		if (Mod::get()->getSavedValue<int>("pet-moons") >= 3000) {
+			coro::spawn << PetUtils::upgradeRarenessToEpic();
+		} else {
+			Notification::create("Reach 3000 pet moons!", NotificationIcon::Error)->show();
+		}
+	}
+	if (Mod::get()->getSavedValue<std::string>("pet-rareness") == "Epic") {
+		if (Mod::get()->getSavedValue<int>("pet-moons") >= 10000) {
+			coro::spawn << PetUtils::upgradeRarenessToMythic();
+		} else {
+			Notification::create("Reach 10000 pet moons!", NotificationIcon::Error)->show();
+		}
+	}
+	if (Mod::get()->getSavedValue<std::string>("pet-rareness") == "Mythic") {
+		Notification::create("Your rareness is fully upgraded!", NotificationIcon::Success)->show();
+	}
+}
+
 void PetLayer::onInfoBtn(CCObject* sender) {
 	MDPopup::create(
 		"Grinding Pet",
@@ -415,7 +463,7 @@ void PetLayer::onUpgradeBtn(CCObject* sender) {
 		}
 	}
 	if (Mod::get()->getSavedValue<int>("pet-level") == 5) {
-		Notification::create("Your pet is fully upgraded!", NotificationIcon::Success)->show();
+		Notification::create("Your level is fully upgraded!", NotificationIcon::Success)->show();
 	}
 }
 
