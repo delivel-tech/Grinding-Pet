@@ -13,10 +13,7 @@ public:
 
     static geode::Task<void> getUser();
     static geode::Task<void> newCreateUser();
-    static geode::Task<void> upgradeLevelTo2();
-    static geode::Task<void> upgradeLevelTo3();
-    static geode::Task<void> upgradeLevelTo4();
-    static geode::Task<void> upgradeLevelTo5();
+    static geode::Task<void> upgradeLevelBy(int level, int stars);
     static geode::Task<void> upgradeRarenessToRare();
     static geode::Task<void> upgradeRarenessToEpic();
     static geode::Task<void> upgradeRarenessToMythic();

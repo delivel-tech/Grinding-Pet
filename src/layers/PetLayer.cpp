@@ -2,6 +2,7 @@
 #include "layers/PetLayer.hpp"
 #include <Geode/fmod/fmod.h>
 #include "popups/RenamePopup.hpp"
+#include "popups/PetShop.hpp"
 #include "utils/PetUtils.hpp"
 #include <Geode/utils/coro.hpp>
 
@@ -148,9 +149,12 @@ bool PetLayer::init() {
 	auto gm = GameManager::sharedState();
 	auto playerPet = SimplePlayer::create(gm->m_playerFrame);
 	playerPet->updatePlayerFrame(gm->m_playerFrame, IconType::Cube);
-	playerPet->setColors(gm->colorForIdx(gm->m_playerColor), gm->colorForIdx(gm->m_playerColor2));
-	if (gm->m_playerGlow != 0) {
-		playerPet->setGlowOutline(gm->colorForIdx(gm->m_playerGlowColor));
+	playerPet->setColors({111, 255, 0}, {0, 251, 255});
+	if (Mod::get()->getSavedValue<int>("pet-level") >= 10) {
+		playerPet->setColors(gm->colorForIdx(gm->m_playerColor), gm->colorForIdx(gm->m_playerColor2));
+	    if (gm->m_playerGlow != 0) {
+		    playerPet->setGlowOutline(gm->colorForIdx(gm->m_playerGlowColor));
+	}
 	}
 	playerPet->setScale(1.5f);
 	playerPet->setPositionY(5.f);
@@ -236,98 +240,94 @@ bool PetLayer::init() {
 	leftStarBar->setAnchorPoint({0.5f, 0.f});
 	panel->addChild(leftStarBar);
 
-	if (Mod::get()->getSavedValue<int>("pet-level") == 1) {
-		auto rightStarBar = CCLabelBMFont::create(std::to_string(2000).c_str(), "bigFont.fnt");
-	    limitNodeSize(rightStarBar, {40.f, 32.f}, 0.4f, 0.1f);
-	    rightStarBar->setPosition(343.f, 65.f);
-	    rightStarBar->setAnchorPoint({0.f, 0.5f});
-	    panel->addChild(rightStarBar);
 
-		float ratio = ((float)Mod::get()->getSavedValue<int>("pet-stars") / 2000.f) * 100.f;
-		if (ratio > 100) {
-			ratio = 100.f;
-		}
-		progressBar->setPercentage(ratio);
+	int level = Mod::get()->getSavedValue<int>("pet-level");
+int stars = Mod::get()->getSavedValue<int>("pet-stars");
 
-		auto estimatedInBar = CCLabelBMFont::create(fmt::format("{}%", (int)ratio).c_str(), "bigFont.fnt");
-		limitNodeSize(estimatedInBar, {40.f, 32.f}, 0.4f, 0.1f);
-		estimatedInBar->setPosition(232.f, 65.f);
-		panel->addChild(estimatedInBar);
-	}
+int cost = getUpgradeCost(level);
+if (cost > 0 && cost < 16540) {
+	auto rightStarBar = CCLabelBMFont::create(std::to_string(cost).c_str(), "bigFont.fnt");
+	limitNodeSize(rightStarBar, {40.f, 32.f}, 0.4f, 0.1f);
+	rightStarBar->setPosition(343.f, 65.f);
+	rightStarBar->setAnchorPoint({0.f, 0.5f});
+	panel->addChild(rightStarBar);
 
-	if (Mod::get()->getSavedValue<int>("pet-level") == 2) {
-		auto rightStarBar = CCLabelBMFont::create(std::to_string(5000).c_str(), "bigFont.fnt");
-	    limitNodeSize(rightStarBar, {40.f, 32.f}, 0.4f, 0.1f);
-	    rightStarBar->setPosition(343.f, 65.f);
-	    rightStarBar->setAnchorPoint({0.f, 0.5f});
-	    panel->addChild(rightStarBar);
+	float ratio = ((float)stars / (float)cost) * 100.f;
+	if (ratio > 100.f) ratio = 100.f;
+	if (ratio < 0.f) ratio = 0.f;
 
-		float ratio = ((float)Mod::get()->getSavedValue<int>("pet-stars") / 5000.f) * 100.f;
-		if (ratio > 100) {
-			ratio = 100.f;
-		}
-		progressBar->setPercentage(ratio);
+	progressBar->setPercentage(ratio);
 
-		auto estimatedInBar = CCLabelBMFont::create(fmt::format("{}%", (int)ratio).c_str(), "bigFont.fnt");
-		limitNodeSize(estimatedInBar, {40.f, 32.f}, 0.4f, 0.1f);
-		estimatedInBar->setPosition(232.f, 65.f);
-		panel->addChild(estimatedInBar);
-	}
-
-	if (Mod::get()->getSavedValue<int>("pet-level") == 3) {
-		auto rightStarBar = CCLabelBMFont::create(std::to_string(20000).c_str(), "bigFont.fnt");
-	    limitNodeSize(rightStarBar, {40.f, 32.f}, 0.4f, 0.1f);
-	    rightStarBar->setPosition(343.f, 65.f);
-	    rightStarBar->setAnchorPoint({0.f, 0.5f});
-	    panel->addChild(rightStarBar);
-
-		float ratio = ((float)Mod::get()->getSavedValue<int>("pet-stars") / 20000.f) * 100.f;
-		if (ratio > 100) {
-			ratio = 100.f;
-		}
-		progressBar->setPercentage(ratio);
-
-		auto estimatedInBar = CCLabelBMFont::create(fmt::format("{}%", (int)ratio).c_str(), "bigFont.fnt");
-		limitNodeSize(estimatedInBar, {40.f, 32.f}, 0.4f, 0.1f);
-		estimatedInBar->setPosition(232.f, 65.f);
-		panel->addChild(estimatedInBar);
-	}
-
-	if (Mod::get()->getSavedValue<int>("pet-level") == 4) {
-		auto rightStarBar = CCLabelBMFont::create(std::to_string(50000).c_str(), "bigFont.fnt");
-	    limitNodeSize(rightStarBar, {40.f, 32.f}, 0.4f, 0.1f);
-	    rightStarBar->setPosition(343.f, 65.f);
-	    rightStarBar->setAnchorPoint({0.f, 0.5f});
-	    panel->addChild(rightStarBar);
-
-		float ratio = ((float)Mod::get()->getSavedValue<int>("pet-stars") / 50000.f) * 100.f;
-		if (ratio > 100) {
-			ratio = 100.f;
-		}
-		progressBar->setPercentage(ratio);
-
-		auto estimatedInBar = CCLabelBMFont::create(fmt::format("{}%", (int)ratio).c_str(), "bigFont.fnt");
-		limitNodeSize(estimatedInBar, {40.f, 32.f}, 0.4f, 0.1f);
-		estimatedInBar->setPosition(232.f, 65.f);
-		panel->addChild(estimatedInBar);
-	}
-
-	if (Mod::get()->getSavedValue<int>("pet-level") == 5) {
-		progressBar->setPercentage(100.f);
+	auto estimatedInBar = CCLabelBMFont::create(fmt::format("{}%", (int)ratio).c_str(), "bigFont.fnt");
+	limitNodeSize(estimatedInBar, {40.f, 32.f}, 0.4f, 0.1f);
+	estimatedInBar->setPosition(232.f, 65.f);
+	panel->addChild(estimatedInBar);
+} else {
+	progressBar->setPercentage(100.f);
 
 		auto estimatedInBar = CCLabelBMFont::create("Fully upgraded!", "bigFont.fnt");
 		estimatedInBar->setScale(0.4f);
 		estimatedInBar->setPosition(232.f, 65.f);
 		panel->addChild(estimatedInBar);
 		panel->removeChild(leftStarBar);
-	}
+}
 
 	auto infoBtnSpr = CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png");
 	auto infoBtn = CCMenuItemSpriteExtra::create(infoBtnSpr, this, menu_selector(PetLayer::onInfoBtn));
-	infoBtn->setPosition(265.f, -140.f);
+	infoBtn->setPosition(200.f, -12.f);
 	btnMenu->addChild(infoBtn);
 
+	if (Mod::get()->getSavedValue<int>("pet-level") >= 20) {
+		auto shopSpr = CCSprite::createWithSpriteFrameName("shopRope4_001.png");
+	if (!shopSpr) {
+		log::error("spr not found");
+	}
+	shopSpr->setScale(0.9f);
+	auto shopBtn = CCMenuItemSpriteExtra::create(shopSpr, this, menu_selector(PetLayer::onShopBtn));
+	shopBtn->setPosition(-180.f, 130.f);
+	btnMenu->addChild(shopBtn);
+	}
+
 	return true;
+}
+
+int PetLayer::getUpgradeCost(int level) {
+	switch (level) {
+		case 1: return 100;
+		case 2: return 120;
+		case 3: return 144;
+		case 4: return 173;
+		case 5: return 208;
+		case 6: return 250;
+		case 7: return 300;
+		case 8: return 360;
+		case 9: return 432;
+		case 10: return 518;
+		case 11: return 622;
+		case 12: return 746;
+		case 13: return 895;
+		case 14: return 1074;
+		case 15: return 1289;
+		case 16: return 1547;
+		case 17: return 1856;
+		case 18: return 2227;
+		case 19: return 2672;
+		case 20: return 3206;
+		case 21: return 3847;
+		case 22: return 4616;
+		case 23: return 5539;
+		case 24: return 6647;
+		case 25: return 7976;
+		case 26: return 9571;
+		case 27: return 11485;
+		case 28: return 13782;
+		case 29: return 16539;
+		default: return 0;
+	}
+}
+
+void PetLayer::onShopBtn(CCObject* sender) {
+	PetShop::create()->show();
 }
 
 void PetLayer::onUpgradeRareBtn(CCObject* sender) {
@@ -420,8 +420,9 @@ void PetLayer::onSettingsBtn(CCObject* sender) {
 
 Task<void> PetLayer::runSyncFlow() {
 	Notification::create("[Grinding Pet] Syncing...", NotificationIcon::Loading)->show();
-	
+
 	co_await PetUtils::newCreateUser();
+	
 	co_await PetUtils::checkStats();
 
 	Notification::create("[Grinding Pet] Synced data.", NotificationIcon::Success)->show();
@@ -434,38 +435,129 @@ void PetLayer::onReloadBtn(CCObject* sender) {
 }
 
 void PetLayer::onUpgradeBtn(CCObject* sender) {
-	if (Mod::get()->getSavedValue<int>("pet-level") == 1) {
-		if (Mod::get()->getSavedValue<int>("pet-stars") >= 2000) {
-			coro::spawn << PetUtils::upgradeLevelTo2();
-		} else {
-			Notification::create("Reach 2000 pet stars!", NotificationIcon::Error)->show();
-		}
+	int level = Mod::get()->getSavedValue<int>("pet-level");
+	int stars = Mod::get()->getSavedValue<int>("pet-stars");
+
+	if (level == 1) {
+		if (stars >= 100) coro::spawn << PetUtils::upgradeLevelBy(1, -100);
+		else Notification::create("Reach 100 pet stars!", NotificationIcon::Error)->show();
 	}
-	if (Mod::get()->getSavedValue<int>("pet-level") == 2) {
-		if (Mod::get()->getSavedValue<int>("pet-stars") >= 5000) {
-			coro::spawn << PetUtils::upgradeLevelTo3();
-		} else {
-			Notification::create("Reach 5000 pet stars!", NotificationIcon::Error)->show();
-		}
+	else if (level == 2) {
+		if (stars >= 120) coro::spawn << PetUtils::upgradeLevelBy(1, -120);
+		else Notification::create("Reach 120 pet stars!", NotificationIcon::Error)->show();
 	}
-	if (Mod::get()->getSavedValue<int>("pet-level") == 3) {
-		if (Mod::get()->getSavedValue<int>("pet-stars") >= 20000) {
-			coro::spawn << PetUtils::upgradeLevelTo4();
-		} else {
-			Notification::create("Reach 20000 pet stars!", NotificationIcon::Error)->show();
-		}
+	else if (level == 3) {
+		if (stars >= 144) coro::spawn << PetUtils::upgradeLevelBy(1, -144);
+		else Notification::create("Reach 144 pet stars!", NotificationIcon::Error)->show();
 	}
-	if (Mod::get()->getSavedValue<int>("pet-level") == 4) {
-		if (Mod::get()->getSavedValue<int>("pet-stars") >= 50000) {
-			coro::spawn << PetUtils::upgradeLevelTo5();
-		} else {
-			Notification::create("Reach 50000 pet stars!", NotificationIcon::Error)->show();
-		}
+	else if (level == 4) {
+		if (stars >= 173) coro::spawn << PetUtils::upgradeLevelBy(1, -173);
+		else Notification::create("Reach 173 pet stars!", NotificationIcon::Error)->show();
 	}
-	if (Mod::get()->getSavedValue<int>("pet-level") == 5) {
+	else if (level == 5) {
+		if (stars >= 208) coro::spawn << PetUtils::upgradeLevelBy(1, -208);
+		else Notification::create("Reach 208 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 6) {
+		if (stars >= 250) coro::spawn << PetUtils::upgradeLevelBy(1, -250);
+		else Notification::create("Reach 250 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 7) {
+		if (stars >= 300) coro::spawn << PetUtils::upgradeLevelBy(1, -300);
+		else Notification::create("Reach 300 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 8) {
+		if (stars >= 360) coro::spawn << PetUtils::upgradeLevelBy(1, -360);
+		else Notification::create("Reach 360 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 9) {
+		if (stars >= 432) coro::spawn << PetUtils::upgradeLevelBy(1, -432);
+		else Notification::create("Reach 432 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 10) {
+		if (stars >= 518) coro::spawn << PetUtils::upgradeLevelBy(1, -518);
+		else Notification::create("Reach 518 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 11) {
+		if (stars >= 622) coro::spawn << PetUtils::upgradeLevelBy(1, -622);
+		else Notification::create("Reach 622 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 12) {
+		if (stars >= 746) coro::spawn << PetUtils::upgradeLevelBy(1, -746);
+		else Notification::create("Reach 746 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 13) {
+		if (stars >= 895) coro::spawn << PetUtils::upgradeLevelBy(1, -895);
+		else Notification::create("Reach 895 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 14) {
+		if (stars >= 1074) coro::spawn << PetUtils::upgradeLevelBy(1, -1074);
+		else Notification::create("Reach 1074 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 15) {
+		if (stars >= 1289) coro::spawn << PetUtils::upgradeLevelBy(1, -1289);
+		else Notification::create("Reach 1289 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 16) {
+		if (stars >= 1547) coro::spawn << PetUtils::upgradeLevelBy(1, -1547);
+		else Notification::create("Reach 1547 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 17) {
+		if (stars >= 1856) coro::spawn << PetUtils::upgradeLevelBy(1, -1856);
+		else Notification::create("Reach 1856 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 18) {
+		if (stars >= 2227) coro::spawn << PetUtils::upgradeLevelBy(1, -2227);
+		else Notification::create("Reach 2227 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 19) {
+		if (stars >= 2672) coro::spawn << PetUtils::upgradeLevelBy(1, -2672);
+		else Notification::create("Reach 2672 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 20) {
+		if (stars >= 3206) coro::spawn << PetUtils::upgradeLevelBy(1, -3206);
+		else Notification::create("Reach 3206 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 21) {
+		if (stars >= 3847) coro::spawn << PetUtils::upgradeLevelBy(1, -3847);
+		else Notification::create("Reach 3847 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 22) {
+		if (stars >= 4616) coro::spawn << PetUtils::upgradeLevelBy(1, -4616);
+		else Notification::create("Reach 4616 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 23) {
+		if (stars >= 5539) coro::spawn << PetUtils::upgradeLevelBy(1, -5539);
+		else Notification::create("Reach 5539 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 24) {
+		if (stars >= 6647) coro::spawn << PetUtils::upgradeLevelBy(1, -6647);
+		else Notification::create("Reach 6647 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 25) {
+		if (stars >= 7976) coro::spawn << PetUtils::upgradeLevelBy(1, -7976);
+		else Notification::create("Reach 7976 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 26) {
+		if (stars >= 9571) coro::spawn << PetUtils::upgradeLevelBy(1, -9571);
+		else Notification::create("Reach 9571 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 27) {
+		if (stars >= 11485) coro::spawn << PetUtils::upgradeLevelBy(1, -11485);
+		else Notification::create("Reach 11485 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 28) {
+		if (stars >= 13782) coro::spawn << PetUtils::upgradeLevelBy(1, -13782);
+		else Notification::create("Reach 13782 pet stars!", NotificationIcon::Error)->show();
+	}
+	else if (level == 29) {
+		if (stars >= 16539) coro::spawn << PetUtils::upgradeLevelBy(1, -16539);
+		else Notification::create("Reach 16539 pet stars!", NotificationIcon::Error)->show();
+	} else if (level == 30) {
 		Notification::create("Your level is fully upgraded!", NotificationIcon::Success)->show();
 	}
 }
+
 
 void PetLayer::onRenameBtn(CCObject*) {
     RenamePopup::create("Grinding Pet")->show();

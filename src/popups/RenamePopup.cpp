@@ -59,7 +59,7 @@ Task<void> RenamePopup::onOKTask() {
     body["updates"] = updates;
     req.bodyJSON(body);
 
-    auto response = co_await req.patch("https://delivel.tech/petapi/update_user");
+    auto response = co_await req.patch("https://delivel.tech/petapi/adv_update_user");
     
     if (response.ok()) {
         popup->showSuccessMessage("Pet's name changed!");
