@@ -245,7 +245,7 @@ bool PetLayer::init() {
 int stars = Mod::get()->getSavedValue<int>("pet-stars");
 
 int cost = getUpgradeCost(level);
-if (cost > 0 && cost < 16540) {
+if (cost > 99 && cost < 16540) {
 	auto rightStarBar = CCLabelBMFont::create(std::to_string(cost).c_str(), "bigFont.fnt");
 	limitNodeSize(rightStarBar, {40.f, 32.f}, 0.4f, 0.1f);
 	rightStarBar->setPosition(343.f, 65.f);
