@@ -147,18 +147,17 @@ bool PetLayer::init() {
 	btnMenu->addChild(infoPanel);
 
 	auto gm = GameManager::sharedState();
-	auto playerPet = SimplePlayer::create(gm->m_playerFrame);
-	playerPet->updatePlayerFrame(gm->m_playerFrame, IconType::Cube);
-	playerPet->setColors({111, 255, 0}, {0, 251, 255});
+	auto playerPetSprx = SimplePlayer::create(gm->m_playerFrame);
+	playerPetSprx->updatePlayerFrame(gm->m_playerFrame, IconType::Cube);
+	playerPetSprx->setColors({111, 255, 0}, {0, 251, 255});
 	if (Mod::get()->getSavedValue<int>("pet-level") >= 10) {
-		playerPet->setColors(gm->colorForIdx(gm->m_playerColor), gm->colorForIdx(gm->m_playerColor2));
+		playerPetSprx->setColors(gm->colorForIdx(gm->m_playerColor), gm->colorForIdx(gm->m_playerColor2));
 	    if (gm->m_playerGlow != 0) {
-		    playerPet->setGlowOutline(gm->colorForIdx(gm->m_playerGlowColor));
+		    playerPetSprx->setGlowOutline(gm->colorForIdx(gm->m_playerGlowColor));
 	}
 	}
-	playerPet->setScale(1.5f);
-	playerPet->setPositionY(5.f);
-	btnMenu->addChild(playerPet);
+	auto playerPetSpr = playerPetSprx->getChildByType<CCSprite>(0);
+	playerPetSpr->setScale(1.5f);
 
 	auto lvlSpr = CCSprite::createWithSpriteFrameName("shard0202ShardSmall_001.png");
 	if (!lvlSpr) {
@@ -197,7 +196,7 @@ bool PetLayer::init() {
 	panel->addChild(starSpr);
 
 	auto starAmountVa = Mod::get()->getSavedValue<int>("pet-stars");
-	auto starAmount = CCLabelBMFont::create(std::to_string(starAmountVa).c_str(), "bigFont.fnt");
+	auto starAmount = CCLabelBMFont::create(formatWithCommas(starAmountVa).c_str(), "bigFont.fnt");
 	starAmount->setAnchorPoint({0.f, 0.5f});
 	starAmount->setPosition({110.f, 170.f});
 	limitNodeSize(starAmount, {40.f, 32.f}, 0.5f, 0.1f);
@@ -210,7 +209,7 @@ bool PetLayer::init() {
 	panel->addChild(moonSpr);
 
 	auto moonAmountVa = Mod::get()->getSavedValue<int>("pet-moons");
-	auto moonAmount = CCLabelBMFont::create(std::to_string(moonAmountVa).c_str(), "bigFont.fnt");
+	auto moonAmount = CCLabelBMFont::create(formatWithCommas(moonAmountVa).c_str(), "bigFont.fnt");
 	moonAmount->setAnchorPoint({0.f, 0.5f});
 	moonAmount->setPosition({110.f, 145.f});
 	limitNodeSize(moonAmount, {40.f, 32.f}, 0.5f, 0.1f);
@@ -234,7 +233,7 @@ bool PetLayer::init() {
 	progressBar->setBarChangeRate({1.f, 0.f});
 	panel->addChild(progressBar);
 
-	auto leftStarBar = CCLabelBMFont::create(std::to_string(starAmountVa).c_str(), "bigFont.fnt");
+	auto leftStarBar = CCLabelBMFont::create(formatWithCommas(starAmountVa).c_str(), "bigFont.fnt");
 	limitNodeSize(leftStarBar, {40.f, 32.f}, 0.4f, 0.1f);
 	leftStarBar->setPosition(110.f, 59.f);
 	leftStarBar->setAnchorPoint({0.5f, 0.f});
@@ -246,7 +245,7 @@ int stars = Mod::get()->getSavedValue<int>("pet-stars");
 
 int cost = getUpgradeCost(level);
 if (cost > 99 && cost < 16540) {
-	auto rightStarBar = CCLabelBMFont::create(std::to_string(cost).c_str(), "bigFont.fnt");
+	auto rightStarBar = CCLabelBMFont::create(formatWithCommas(cost).c_str(), "bigFont.fnt");
 	limitNodeSize(rightStarBar, {40.f, 32.f}, 0.4f, 0.1f);
 	rightStarBar->setPosition(343.f, 65.f);
 	rightStarBar->setAnchorPoint({0.f, 0.5f});
@@ -277,7 +276,7 @@ if (cost > 99 && cost < 16540) {
 	infoBtn->setPosition(200.f, -12.f);
 	btnMenu->addChild(infoBtn);
 
-	if (Mod::get()->getSavedValue<int>("pet-level") >= 20) {
+	if (Mod::get()->getSavedValue<int>("pet-level") >= 15) {
 		auto shopSpr = CCSprite::createWithSpriteFrameName("shopRope4_001.png");
 	if (!shopSpr) {
 		log::error("spr not found");
@@ -288,7 +287,63 @@ if (cost > 99 && cost < 16540) {
 	btnMenu->addChild(shopBtn);
 	}
 
+	auto age = getPetAge(level);
+
+	auto ageLabel = CCLabelBMFont::create(age.c_str(), "goldFont.fnt");
+	ageLabel->setPosition({232.f, 200.f});
+	ageLabel->setScale(0.9f);
+	ageLabel->limitLabelWidth(106.f, 0.9f, 0.2f);
+	panel->addChild(ageLabel);
+
+		auto playerPet = CCMenuItemSpriteExtra::create(
+		playerPetSpr, this, menu_selector(PetLayer::onPet)
+	);
+	btnMenu->addChild(playerPet);
+	playerPet->setPositionY(5.f);
+
+	if (level >= 1 && level < 5) {
+		playerPetSpr->setScale(1.3f);
+		playerPet->setPositionY(0.f);
+		petShadow->setScale(0.7f);
+	} else if (level >= 5 && level < 10) {
+		playerPetSpr->setScale(1.4f);
+		playerPet->setPositionY(2.f);
+		petShadow->setScale(0.75f);
+	} else if (level >= 10 && level < 15) {
+
+	} else {
+		playerPetSpr->setScale(1.55f);
+		petShadow->setScale(0.85f);
+	}
+
 	return true;
+}
+
+void PetLayer::onPet(CCObject* sender) {
+	FLAlertLayer::create(
+		"Reply",
+		"Agu Aga ig",
+		"OK"
+	)->show();
+}
+
+std::string PetLayer::formatWithCommas(int n) {
+    std::string result = numToString(n);
+
+    for (int i = result.size() - 3; i > 0; i -= 3) {
+        result.insert(i, ",");
+    }
+
+    return result;
+}
+
+std::string PetLayer::getPetAge(int level) {
+	if (level >= 1 && level < 5) return "Baby";
+	if (level >= 5 && level < 10) return "Teen";
+	if (level >= 10 && level < 15) return "Scholar";
+	if (level >= 15 && level < 20) return "Adult";
+	if (level >= 20 && level < 25) return "Sage";
+	if (level >= 25) return "Cosmic Mind";
 }
 
 int PetLayer::getUpgradeCost(int level) {
