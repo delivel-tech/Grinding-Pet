@@ -205,6 +205,8 @@ bool PetShop::setup(std::string const& value) {
     decoMenu->m_contentLayer->addChild(item6Menu);
 
     mainLayer->addChild(decoMenu);
+
+    return true;
 }
 
 void PetShop::selectTab(int id) {

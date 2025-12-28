@@ -344,6 +344,7 @@ std::string PetLayer::getPetAge(int level) {
 	if (level >= 15 && level < 20) return "Adult";
 	if (level >= 20 && level < 25) return "Sage";
 	if (level >= 25) return "Cosmic Mind";
+	return "Unknown";
 }
 
 int PetLayer::getUpgradeCost(int level) {
