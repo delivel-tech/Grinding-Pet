@@ -14,47 +14,35 @@ jobs:
         config:
           - name: Windows
             os: windows-latest
-            platform: win
           
           - name: macOS
             os: macos-latest
-            platform: mac
           
           - name: iOS
             os: macos-latest
-            platform: ios
+            target: iOS
           
           - name: Android32
             os: ubuntu-latest
-            platform: android32
+            target: Android32
           
           - name: Android64
             os: ubuntu-latest
-            platform: android64
+            target: Android64
     
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       
-      - name: Setup Geode CLI
-        uses: geode-sdk/cli@main
-      
-      - name: Install Geode SDK binaries
-        run: geode sdk install-binaries
-      
-      - name: Build mod
-        run: geode build -p ${{ matrix.config.platform }}
-      
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Build the mod
+        uses: geode-sdk/build-geode-mod@main
         with:
-          name: ${{ matrix.config.name }}-build
-          path: build/*.geode
+          combine: true
+          target: ${{ matrix.config.target }}
   
   package:
     name: Package builds
@@ -62,18 +50,10 @@ jobs:
     needs: ['build']
     
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
+      - uses: geode-sdk/build-geode-mod/combine@main
+        id: build
       
-      - name: Combine builds
-        run: |
-          mkdir -p combined
-          find artifacts -name "*.geode" -exec cp {} combined/ \;
-      
-      - name: Upload combined artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: Build Output
-          path: combined/*.geode
+          path: ${{ steps.build.outputs.build-output }}
