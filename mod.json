@@ -36,5 +36,10 @@
 		"universal",
 		"utility",
 		"customization"
-	]
+	],
+	"links": {
+		"source": "https://github.com/delivel-tech/Grinding-Pet",
+		"community": "https://discord.gg/Tunmwu86W3",
+		"homepage": "https://delivel.tech/"
+	}
 }
