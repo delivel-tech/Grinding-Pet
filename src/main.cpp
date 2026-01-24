@@ -1,5 +1,5 @@
 #include <Geode/Geode.hpp>
-#include <Geode/modify/MenuLayer.hpp>
+#include <Geode/modify/CreatorLayer.hpp>
 #include "layers/PetLayer.hpp"
 #include "utils/PetUtils.hpp"
 #include <argon/argon.hpp>
@@ -27,23 +27,42 @@ $on_mod(Loaded) {
     });
 }
 
-class $modify(PetMenuLayer, MenuLayer) {
+class $modify(PetCreatorLayer, CreatorLayer) {
     bool init() {
-        if (!MenuLayer::init()) return false;
-        
-        auto rightMenu = getChildByIDRecursive("right-side-menu");
+        if (!CreatorLayer::init()) return false;
 
-        auto spr = CCSprite::createWithSpriteFrameName("GJ_plainBtn_001.png");
+        auto menu = CCMenu::create();
+        menu->setID("pet-menu");
 
-        auto btn = CCMenuItemSpriteExtra::create(spr, this, menu_selector(PetMenuLayer::onPetButton));
+        auto layout = ColumnLayout::create();
+        layout->setAutoGrowAxis(true);
+        layout->setAxisAlignment(AxisAlignment::Center);
 
-        rightMenu->addChild(btn);
-        rightMenu->updateLayout();
+        menu->setLayout(layout);
+        this->addChild(menu);
+
+        auto btnSprTop = CCSprite::create("player.png"_spr);
+        btnSprTop->setID("pet-btn-spr-top");
+
+        auto btnSpr = CircleButtonSprite::create(btnSprTop);
+        btnSpr->setID("pet-btn-spr");
+        btnSpr->setScale(0.9f);
+
+        auto btn = CCMenuItemSpriteExtra::create(
+            btnSpr,
+            this,
+            menu_selector(PetCreatorLayer::onPetBtn)
+        );
+        btn->setID("pet-btn");
+        menu->setPositionX(23.f);
+        btnSprTop->setScale(0.85f);
+        menu->addChild(btn);
+        menu->updateLayout();
 
         return true;
-    };
+    }
 
-    void onPetButton(CCObject* sender) {
+    void onPetBtn(CCObject* sender) {
         if (Mod::get()->getSavedValue<int>("is-banned") == 1) {
             FLAlertLayer::create("Banned", fmt::format("You have been <cj>banned from Grinding Pet</c>, if you believe it is a mistake, <cy>appeal</c> in our <cp>Discord Server.</c>\n<cy>Ban reason:</c> <cp>{}</c>.", Mod::get()->getSavedValue<std::string>("ban-reason")), "OK")->show();
             return;
@@ -53,7 +72,6 @@ class $modify(PetMenuLayer, MenuLayer) {
         scene->addChild(layer);
 
         auto transition = CCTransitionFade::create(0.5f, scene);
-
         CCDirector::sharedDirector()->pushScene(transition);
     }
 };

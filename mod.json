@@ -8,13 +8,33 @@
 	},
 	"id": "delivel.grinding-pet",
 	"name": "Grinding Pet",
-	"version": "v0.5.3-alpha",
+	"version": "v0.6.2-beta",
 	"developer": "delivel",
 	"description": "Raise a pet by grinding stats!",
 	"resources": {
 		"sprites": [
 			"resources/starSpr.png",
-			"resources/moonSpr.png"
+			"resources/moonSpr.png",
+			"resources/player.png"
 		]
-	}
+	},
+	"settings": {
+		"title": {
+			"type": "title",
+			"name": "Pet Settings"
+		},
+		"notifications": {
+			"name": "Notifications",
+			"description": "Choose if you want to see such notifications as Syncing data etc.",
+			"type": "bool",
+			"default": true
+		}
+	},
+	"tags": [
+		"content",
+		"interface",
+		"universal",
+		"utility",
+		"customization"
+	]
 }

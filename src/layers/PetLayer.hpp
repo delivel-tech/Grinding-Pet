@@ -15,11 +15,9 @@ public:
     void onReloadBtn(cocos2d::CCObject* sender);
     void onInfoBtn(cocos2d::CCObject* sender);
     void onUpgradeRareBtn(cocos2d::CCObject* sender);
-    void onShopBtn(cocos2d::CCObject* sender);
     void onPet(cocos2d::CCObject* sender);
     static int getUpgradeCost(int level);
     static std::string getPetAge(int level);
-    static void onInfoBtnOutside();
     static geode::Task<void> runSyncFlow();
     static std::string formatWithCommas(int n);
 

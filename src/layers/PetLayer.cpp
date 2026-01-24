@@ -2,9 +2,9 @@
 #include "layers/PetLayer.hpp"
 #include <Geode/fmod/fmod.h>
 #include "popups/RenamePopup.hpp"
-#include "popups/PetShop.hpp"
 #include "utils/PetUtils.hpp"
 #include <Geode/utils/coro.hpp>
+#include <Geode/ui/GeodeUI.hpp>
 
 using namespace geode::prelude;
 
@@ -276,17 +276,6 @@ if (cost > 99 && cost < 16540) {
 	infoBtn->setPosition(200.f, -12.f);
 	btnMenu->addChild(infoBtn);
 
-	if (Mod::get()->getSavedValue<int>("pet-level") >= 15) {
-		auto shopSpr = CCSprite::createWithSpriteFrameName("shopRope4_001.png");
-	if (!shopSpr) {
-		log::error("spr not found");
-	}
-	shopSpr->setScale(0.9f);
-	auto shopBtn = CCMenuItemSpriteExtra::create(shopSpr, this, menu_selector(PetLayer::onShopBtn));
-	shopBtn->setPosition(-180.f, 130.f);
-	btnMenu->addChild(shopBtn);
-	}
-
 	auto age = getPetAge(level);
 
 	auto ageLabel = CCLabelBMFont::create(age.c_str(), "goldFont.fnt");
@@ -320,13 +309,62 @@ if (cost > 99 && cost < 16540) {
 }
 
 void PetLayer::onPet(CCObject* sender) {
-	FLAlertLayer::create(
-		"Reply",
-		"Agu Aga ig",
-		"OK"
-	)->show();
+    int level = Mod::get()->getSavedValue<int>("pet-level");
+    
+    std::vector<std::string> messages;
+    
+    if (level >= 1 && level < 5) {
+        messages = {
+            "I've just been born! Feed me with your stats and I'll grow big and strong!",
+            "*yawn* I'm so tiny... Play some levels so I can learn about this world!",
+            "Everything is so new and shiny! What are those sparkly star things?"
+        };
+    }
+    else if (level >= 5 && level < 10) {
+        messages = {
+            "Ooh! I love watching you jump! Can you do that spike thing again?",
+            "Stars are yummy! But why do some levels have more than others?",
+            "I'm getting stronger! Keep playing and I'll learn all your tricks!"
+        };
+    }
+    else if (level >= 10 && level < 15) {
+        messages = {
+            "I've been thinking... Those demon levels look scary but exciting!",
+            "Your star count is growing nicely! I can feel myself leveling up with you!",
+            "Have you noticed? The harder the level, the more I learn from watching you play!"
+        };
+    }
+    else if (level >= 15 && level < 20) {
+        messages = {
+            "Consistency is key! Even small daily progress builds up to great achievements.",
+            "I've observed that moon levels truly test your mastery. They're worth the challenge!",
+            "Your journey through demons shows real dedication. Each star tells a story of perseverance!"
+        };
+    }
+    else if (level >= 20 && level < 25) {
+        messages = {
+            "Remember: every pro was once a beginner who refused to give up.",
+            "Those moons you're collecting? They represent your growth beyond the ordinary.",
+            "I've seen you retry levels hundreds of times. That persistence defines true skill!"
+        };
+    }
+    else if (level >= 25) {
+        messages = {
+            "The stars you collect are not the goal—they're merely proof of the journey you've taken.",
+            "In the grand tapestry of Geometry Dash, each attempt is a thread. Failures and successes both create the masterpiece.",
+            "I've witnessed countless runs. The difference between impossible and possible? Just one more try.",
+            "Moons shine brightest in darkness. Your hardest challenges will become your proudest victories.",
+            "True mastery isn't about the number of stars—it's about enjoying every jump, every beat, every moment."
+        };
+    }
+    
+    if (!messages.empty()) {
+        int randomIndex = std::rand() % messages.size();
+        FLAlertLayer::create("Pet Thought", messages[randomIndex], "OK")->show();
+    } else {
+		Notification::create("Failed to reply", NotificationIcon::Error)->show();
+	}
 }
-
 std::string PetLayer::formatWithCommas(int n) {
     std::string result = numToString(n);
 
@@ -382,10 +420,6 @@ int PetLayer::getUpgradeCost(int level) {
 	}
 }
 
-void PetLayer::onShopBtn(CCObject* sender) {
-	PetShop::create()->show();
-}
-
 void PetLayer::onUpgradeRareBtn(CCObject* sender) {
 	if (Mod::get()->getSavedValue<std::string>("pet-rareness") == "Common") {
 		if (Mod::get()->getSavedValue<int>("pet-moons") >= 500) {
@@ -419,30 +453,8 @@ void PetLayer::onInfoBtn(CCObject* sender) {
 		"### <cj>How to use</c> the mod?\n"
 		"Well, once this mod is installed, it tracks your <cg>in-game stats</c>. Once you sync your data, newly grinded stats will turn to <cy>Pet Stats</c>.\n"
 		"You can use <cy>Pet Stats</c> for evolving your pet, for example, you need to reach N amount of stars to upgrade <cb>Pet's Level.</c>\n"
-		"<cy>Pet Stars</c> are used for long-time pet evolving, while <cp>Pet Moons</c> are used for small purchases like <cg>Pet Decorations</c>, or rareness.\n"
-		"<cp>Pet Level</c> allows you to open new features, like shop. <cg>Pet Rareness</c> is just a status of your pet, evolved by moons, doesn't give any perks."
-		"\r\n\r\n---\r\n\r\n"
-		"### <cj>Additional info</c> regarding the mod:\n"
-		"<cy>First:</c> Your statistics are not automatically updated except when mod is loaded, therefore you'll need to use Sync button in Pet Menu.\n"
-		"<co>Secondly:</c> Pet statistics DOESN'T change real stars or moons, it can only load. So that you don't need to worry, it doesn't go against Leaderboard Guidelines.\n"
-		"<cg>Thirdly:</c> Once your data is synced, it's stored in User Database, so if you reinstall the mod, you won't lose your data! Mod doesn't store any private information.\n"
-		"<cr>Fourthly:</c> This mod uses Argon for authentification purposes. By using Grinding Pet you allow it to send a one-time message to a bot account.\n"
-		"\r\n\r\n---\r\n\r\n"
-		"### <cj>Rules:</c>\n"
-		"<cy>Firstly:</c> As this mod is online, keep <cb>Pet Name</c> appropriate. Naming it bad may result in <cy>Ban</c> from the mod.\n"
-		"<cp>Secondly:</c> Don't modify any statistics in mod, you will be <cy>banned</c>.\n",
-		"OK"
-	)->show();
-}
-
-void PetLayer::onInfoBtnOutside() {
-	MDPopup::create(
-		"Grinding Pet",
-		"### <cj>How to use</c> the mod?\n"
-		"Well, once this mod is installed, it tracks your <cg>in-game stats</c>. Once you sync your data, newly grinded stats will turn to <cy>Pet Stats</c>.\n"
-		"You can use <cy>Pet Stats</c> for evolving your pet, for example, you need to reach N amount of stars to upgrade <cb>Pet's Level.</c>\n"
-		"<cy>Pet Stars</c> are used for long-time pet evolving, while <cp>Pet Moons</c> are used for small purchases like <cg>Pet Decorations</c>, or rareness.\n"
-		"<cp>Pet Level</c> allows you to open new features, like shop. <cg>Pet Rareness</c> is just a status of your pet, evolved by moons, doesn't give any perks.\n"
+		"<cy>Pet Stars</c> are used for long-time pet evolving, while <cp>Pet Moons</c> are used for rareness.\n"
+		"<cp>Pet Level</c> allows you to open new features. <cg>Pet Rareness</c> is just a status of your pet, evolved by moons, doesn't give any perks."
 		"\r\n\r\n---\r\n\r\n"
 		"### <cj>Additional info</c> regarding the mod:\n"
 		"<cy>First:</c> Your statistics are not automatically updated except when mod is loaded, therefore you'll need to use Sync button in Pet Menu.\n"
@@ -471,17 +483,17 @@ void PetLayer::update(float dt) {
 }
 
 void PetLayer::onSettingsBtn(CCObject* sender) {
-	Notification::create("Settings callback placeholder", NotificationIcon::Info)->show();
+	openSettingsPopup(getMod());
 }
 
 Task<void> PetLayer::runSyncFlow() {
-	Notification::create("[Grinding Pet] Syncing...", NotificationIcon::Loading)->show();
+	if (Mod::get()->getSettingValue<bool>("notifications")) {
+		Notification::create("[Grinding Pet] Syncing...", NotificationIcon::Loading)->show();
+	}
 
 	co_await PetUtils::newCreateUser();
 	
 	co_await PetUtils::checkStats();
-
-	Notification::create("[Grinding Pet] Synced data.", NotificationIcon::Success)->show();
 
 	co_return;
 }
