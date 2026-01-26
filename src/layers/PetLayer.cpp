@@ -499,7 +499,19 @@ Task<void> PetLayer::runSyncFlow() {
 }
 
 void PetLayer::onReloadBtn(CCObject* sender) {
+	auto btn = typeinfo_cast<CCMenuItemSpriteExtra*>(sender);
+	btn->setEnabled(false);
+	btn->runAction(CCTintTo::create(0.5f, 128, 128, 128));
 	coro::spawn << PetLayer::runSyncFlow();
+	auto seq = CCSequence::create(
+		CCDelayTime::create(4.f),
+		CallFuncExt::create([btn]() {
+			btn->setEnabled(true);
+			btn->runAction(CCTintTo::create(0.5f, 255, 255, 255));
+		}),
+		nullptr
+	);
+	btn->runAction(seq);
 }
 
 void PetLayer::onUpgradeBtn(CCObject* sender) {
