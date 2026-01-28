@@ -502,7 +502,8 @@ void PetLayer::onReloadBtn(CCObject* sender) {
 	auto btn = typeinfo_cast<CCMenuItemSpriteExtra*>(sender);
 	btn->setEnabled(false);
 	btn->runAction(CCTintTo::create(0.5f, 128, 128, 128));
-	coro::spawn << PetLayer::runSyncFlow();
+	Notification::create("[Grinding Pet] Syncing...", NotificationIcon::Loading)->show();
+	coro::spawn << PetUtils::checkStats();
 	auto seq = CCSequence::create(
 		CCDelayTime::create(4.f),
 		CallFuncExt::create([btn]() {
