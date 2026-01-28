@@ -8,7 +8,7 @@
 	},
 	"id": "delivel.grinding-pet",
 	"name": "Grinding Pet",
-	"version": "v0.6.2-beta",
+	"version": "v0.6.3-beta",
 	"developer": "delivel",
 	"description": "Raise a pet by grinding stats!",
 	"resources": {
